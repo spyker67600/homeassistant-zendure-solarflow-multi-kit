@@ -1,0 +1,397 @@
+title: NETRUNNER HUD
+path: netrunner-hud
+type: panel
+cards:
+  - type: vertical-stack
+    cards:
+      # ========================================================================
+      # 1. EN-TÊTE ET CALCULATEUR ROI (HUD CYBERPUNK)
+      # ========================================================================
+      - type: custom:html-template-card
+        ignore_line_breaks: true
+        content: >
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700&display=swap');
+            #conso-root * { box-sizing: border-box; margin: 0; padding: 0; }
+            #conso-root {
+              background: #0a0f1a; color: #a0d4ff; font-family: 'Share Tech Mono', monospace;
+              padding: 16px 20px 20px 20px; border: 1px solid #00e5ff; border-radius: 8px 8px 0 0;
+              box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.1); margin-bottom: 16px;
+            }
+            #conso-root h1 {
+              font-family: 'Orbitron', monospace; font-size: 24px; letter-spacing: 4px; text-align: center;
+              color: #00ff77; margin-bottom: 4px; text-transform: uppercase; text-shadow: 0 0 12px rgba(0, 255, 119, 0.7);
+            }
+            #conso-root .subtitle { font-size: 12px; text-align: center; color: #8cd4ff; letter-spacing: 3px; margin-bottom: 24px; font-weight: bold;}
+            #conso-root .cyber-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px; }
+            #conso-root .cell { background: rgba(12, 25, 45, 0.8); border-radius: 6px; padding: 16px; border: 1px solid rgba(42, 88, 122, 0.6); position: relative; }
+            #conso-root .cell-title {
+              font-family: 'Orbitron', monospace; font-size: 13px; color: #00ff77; letter-spacing: 1px; margin-bottom: 16px;
+              display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dashed rgba(42, 88, 122, 0.8); padding-bottom: 8px;
+            }
+            #conso-root .gauges-container { display: flex; justify-content: space-around; align-items: center; }
+            #conso-root .gauge-wrapper { display: flex; flex-direction: column; align-items: center; }
+            #conso-root .gauge-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(0,0,0,0.5); margin-bottom: 10px;}
+            #conso-root .gauge-inner { width: 100px; height: 100px; border-radius: 50%; background: #0a0f1a; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+            #conso-root .gauge-inner .val { font-family: 'Orbitron', monospace; font-size: 24px; font-weight: bold; }
+            #conso-root .gauge-inner .lbl { font-size: 11px; letter-spacing: 1px; opacity: 0.8; }
+            #conso-root .bat-row { margin-bottom: 14px; }
+            #conso-root .bat-labels { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: #fff; }
+            #conso-root .bat-track { height: 10px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+            #conso-root .bat-fill { height: 100%; border-radius: 3px; box-shadow: 0 0 8px currentColor; }
+            #conso-root .c-cyan { color: #00e5ff; background: #00e5ff; }
+            #conso-root .c-yellow { color: #fcee0a; background: #fcee0a; }
+            #conso-root .c-green { color: #00ff77; background: #00ff77; }
+            #conso-root .data-row { display: flex; justify-content: space-between; font-size: 14px; margin: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+            #conso-root .val-hl { font-family: 'Orbitron', monospace; font-weight: bold; color: #fff; font-size: 15px; }
+          </style>
+
+          <div id="conso-root">
+            <h1>⬢ NETRUNNER // ZENDURE MATRIX</h1>
+            <div class="subtitle">SYS.OP. NORMAL // LIAISON MQTT ÉTABLIE</div>
+
+            {# --- VARIABLES DE TÉLÉMÉTRIE (Solaire, Réseau, Batterie) --- #}
+            {% set sol_tot = states('sensor.total_solar_power') | float(0) %}
+            {% set res_pow = states('sensor.main_power_meter') | float(0) %}
+            
+            {% set soc_1 = states('sensor.zendure_kit_1_soc') | float(0) %}
+            {% set soc_2 = states('sensor.zendure_kit_2_soc') | float(0) %}
+            {% set soc_3 = states('sensor.zendure_kit_3_soc') | float(0) %}
+            
+            {% set lim_1 = states('number.zendure_kit_1_outputlimit') | float(0) %}
+            {% set lim_2 = states('number.zendure_kit_2_outputlimit') | float(0) %}
+            {% set lim_3 = states('number.zendure_kit_3_outputlimit') | float(0) %}
+
+            {# --- CALCULS DU RETOUR SUR INVESTISSEMENT (ROI) --- #}
+            {% set prod_jour = states('sensor.daily_solar_production') | float(0) %}
+            {% set prix_kwh = states('input_number.prix_kwh_electricite') | float(0.1985) %}
+            
+            {# NOTE UTILISATEUR : Remplacez 1271.53 par votre éventuelle production passée à rattraper, sinon mettez 0 #}
+            {% set total_produit = states('sensor.total_solar_production') | float(0) + 1271.53 %}
+            
+            {% set economies = total_produit * prix_kwh %}
+            
+            {# NOTE UTILISATEUR : Remplacez 2160 par le coût total d'achat de votre installation solaire #}
+            {% set reste = 2160 - economies %}
+            {% set prog_roi = [(economies / 2160 * 100), 100] | min | round(1) %}
+            
+            {% set prod_moyenne_jour = 8.5 %}
+            {% set gain_moyen_jour = prod_moyenne_jour * prix_kwh %}
+            {% set jours_restants = (reste / gain_moyen_jour) | int %}
+            {% set date_estimee = (now() + timedelta(days=jours_restants)).strftime('%d/%m/%Y') %}
+            
+            {# Jauge solaire calibrée pour 3000W Max #}
+            {% set pct_sol = [(sol_tot / 30), 100] | min %}
+            
+            {# Jauge réseau Enedis calibrée pour 9000W (9kVA) #}
+            {% set res_val = (res_pow | abs) %}
+            {% set pct_res = [(res_val / 90), 100] | min %}
+            
+            {% set is_inj = res_pow < 0 %}
+            {% set res_color = '#00ff77' if is_inj else '#ff4081' %}
+
+            <div class="cyber-grid">
+              <!-- CELLULE : PUISSANCE EN TEMPS RÉEL -->
+              <div class="cell">
+                <div class="cell-title"><span>PUISSANCE GLOBALE</span><ha-icon icon="mdi:flash"></ha-icon></div>
+                <div class="gauges-container">
+                  <div class="gauge-wrapper">
+                    <div class="gauge-circle" style="background: conic-gradient(#fcee0a {{ pct_sol }}%, rgba(255,255,255,0.05) 0);">
+                      <div class="gauge-inner">
+                        <span class="val" style="color: #fcee0a;">{{ sol_tot | round(0) }}</span>
+                        <span class="lbl">WATTS</span>
+                      </div>
+                    </div>
+                    <span style="font-size: 13px; margin-top: 6px; color:#fcee0a; font-weight:bold;">SOLAIRE</span>
+                  </div>
+                  <div class="gauge-wrapper">
+                    <div class="gauge-circle" style="background: conic-gradient({{ res_color }} {{ pct_res }}%, rgba(255,255,255,0.05) 0);">
+                      <div class="gauge-inner">
+                        <span class="val" style="color: {{ res_color }};">{{ res_val | round(0) }}</span>
+                        <span class="lbl">WATTS</span>
+                      </div>
+                    </div>
+                    <span style="font-size: 13px; margin-top: 6px; color:{{ res_color }}; font-weight:bold;">
+                      {{ 'INJECTION' if is_inj else 'SOUTIRAGE' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CELLULE : ÉTAT DES BATTERIES -->
+              <div class="cell">
+                <div class="cell-title"><span>ÉTAT DU PARC (SOC)</span><ha-icon icon="mdi:battery-charging-high"></ha-icon></div>
+                <div class="bat-row">
+                  <div class="bat-labels"><span>KIT 1</span><span>{{ soc_1 | round(0) }}% | Out: {{ lim_1 }}W</span></div>
+                  <div class="bat-track"><div class="bat-fill c-cyan" style="width: {{ soc_1 }}%;"></div></div>
+                </div>
+                <div class="bat-row">
+                  <div class="bat-labels"><span>KIT 2</span><span>{{ soc_2 | round(0) }}% | Out: {{ lim_2 }}W</span></div>
+                  <div class="bat-track"><div class="bat-fill c-yellow" style="width: {{ soc_2 }}%;"></div></div>
+                </div>
+                <div class="bat-row">
+                  <div class="bat-labels"><span>KIT 3</span><span>{{ soc_3 | round(0) }}% | Out: {{ lim_3 }}W</span></div>
+                  <div class="bat-track"><div class="bat-fill c-green" style="width: {{ soc_3 }}%;"></div></div>
+                </div>
+              </div>
+
+              <!-- CELLULE : R.O.I ET RENTABILITÉ -->
+              <div class="cell">
+                <div class="cell-title"><span>DONNÉES FINANCIÈRES</span><ha-icon icon="mdi:currency-eur"></ha-icon></div>
+                <div class="data-row"><span>PROD. JOUR</span><span class="val-hl" style="color:#00ff77;">{{ prod_jour | round(2) }} kWh (+{{ (prod_jour * prix_kwh) | round(2) }} €)</span></div>
+                <div class="data-row"><span>CAPITAL RECOUVRÉ</span><span class="val-hl" style="color:#00e5ff;">{{ economies | round(2) }} €</span></div>
+                <div class="data-row"><span>RESTE À AMORTIR</span><span class="val-hl" style="color:#ff4081;">{{ max(0, reste | round(2)) }} €</span></div>
+                <div class="data-row"><span>DATE 100% AMORTI</span><span class="val-hl" style="color:#fcee0a;">{{ date_estimee }}</span></div>
+                
+                <div class="bat-labels" style="margin-top: 14px; color: #8cd4ff;"><span>PROGRESSION ROI</span><span class="val-hl">{{ prog_roi }}%</span></div>
+                <div class="bat-track" style="height: 12px; margin-bottom: 5px;"><div class="bat-fill c-green" style="width: {{ prog_roi }}%; background: linear-gradient(90deg, #00e5ff, #00ff77);"></div></div>
+              </div>
+            </div>
+          </div>
+
+      # ========================================================================
+      # 2. GRAPHIQUES HISTORIQUES EN TEMPS RÉEL (APEXCHARTS)
+      # ========================================================================
+      
+      # --- KIT 1 ---
+      - type: custom:apexcharts-card
+        update_delay: 3s
+        update_interval: 1min
+        graph_span: 12h
+        style: >
+          ha-card { background: #0a0f1a; border: 1px solid #00e5ff; border-radius: 8px; margin-bottom: 16px; }
+        header:
+          show: true
+          title: '[ KIT 1 ]'
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 280
+            foreColor: '#8cd4ff'
+            background: '#0a0f1a'
+            toolbar:
+              show: false
+          grid:
+            borderColor: rgba(255,255,255,0.05)
+          tooltip:
+            theme: dark
+        all_series_config:
+          stroke_width: 1
+          curve: smooth
+          type: area
+          opacity: 0.3
+        yaxis:
+          - id: watts
+            apex_config:
+              title: { text: Watts }
+        series:
+          - entity: sensor.zendure_kit_1_solar_power
+            name: Solaire
+            yaxis_id: watts
+            color: '#fcee0a'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_1_output_home_power
+            name: Sortie AC (Maison)
+            yaxis_id: watts
+            color: '#00e5ff'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_1_battery_charge_power
+            name: Recharge Batterie
+            yaxis_id: watts
+            color: '#00ff77'
+            invert: true
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.main_power_meter
+            name: Réseau (Enedis)
+            yaxis_id: watts
+            color: '#ff4081'
+            group_by: { func: avg, duration: 5m }
+
+      # --- KIT 2 ---
+      - type: custom:apexcharts-card
+        update_delay: 3s
+        update_interval: 1min
+        graph_span: 12h
+        style: >
+          ha-card { background: #0a0f1a; border: 1px solid #00e5ff; border-radius: 8px; margin-bottom: 16px; }
+        header:
+          show: true
+          title: '[ KIT 2 ]'
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 280
+            foreColor: '#8cd4ff'
+            background: '#0a0f1a'
+            toolbar: { show: false }
+          grid:
+            borderColor: rgba(255,255,255,0.05)
+          tooltip:
+            theme: dark
+        all_series_config:
+          stroke_width: 1
+          curve: smooth
+          type: area
+          opacity: 0.3
+        yaxis:
+          - id: watts
+            apex_config:
+              title: { text: Watts }
+        series:
+          - entity: sensor.zendure_kit_2_solar_power
+            name: Solaire
+            yaxis_id: watts
+            color: '#fcee0a'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_2_output_home_power
+            name: Sortie AC (Maison)
+            yaxis_id: watts
+            color: '#00e5ff'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_2_battery_charge_power
+            name: Recharge Batterie
+            yaxis_id: watts
+            color: '#00ff77'
+            invert: true
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.main_power_meter
+            name: Réseau (Enedis)
+            yaxis_id: watts
+            color: '#ff4081'
+            group_by: { func: avg, duration: 5m }
+
+      # --- KIT 3 ---
+      - type: custom:apexcharts-card
+        update_delay: 3s
+        update_interval: 1min
+        graph_span: 12h
+        style: >
+          ha-card { background: #0a0f1a; border: 1px solid #00e5ff; border-radius: 8px; margin-bottom: 16px; }
+        header:
+          show: true
+          title: '[ KIT 3 ]'
+          show_states: true
+          colorize_states: true
+        apex_config:
+          chart:
+            height: 280
+            foreColor: '#8cd4ff'
+            background: '#0a0f1a'
+            toolbar: { show: false }
+          grid:
+            borderColor: rgba(255,255,255,0.05)
+          tooltip:
+            theme: dark
+        all_series_config:
+          stroke_width: 1
+          curve: smooth
+          type: area
+          opacity: 0.3
+        yaxis:
+          - id: watts
+            apex_config:
+              title: { text: Watts }
+        series:
+          - entity: sensor.zendure_kit_3_solar_power
+            name: Solaire
+            yaxis_id: watts
+            color: '#fcee0a'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_3_output_home_power
+            name: Sortie AC (Maison)
+            yaxis_id: watts
+            color: '#00e5ff'
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.zendure_kit_3_battery_charge_power
+            name: Recharge Batterie
+            yaxis_id: watts
+            color: '#00ff77'
+            invert: true
+            group_by: { func: avg, duration: 5m }
+          - entity: sensor.main_power_meter
+            name: Réseau (Enedis)
+            yaxis_id: watts
+            color: '#ff4081'
+            group_by: { func: avg, duration: 5m }
+
+      # ========================================================================
+      # 3. HISTORIQUES À LONG TERME (MOIS ET JOURS)
+      # ========================================================================
+      - type: custom:apexcharts-card
+        update_delay: 3s
+        update_interval: 1h
+        graph_span: 12month
+        span:
+          end: month
+        style: >
+          ha-card { background: #0a0f1a; border: 1px solid #00e5ff; border-radius: 8px; margin-bottom: 16px; }
+        header:
+          show: true
+          title: '[ HISTORIQUE MENSUEL (12 MOIS) ]'
+          show_states: false
+        apex_config:
+          chart:
+            height: 280
+            foreColor: '#8cd4ff'
+            background: '#0a0f1a'
+            toolbar: { show: false }
+          grid:
+            borderColor: rgba(255,255,255,0.05)
+          tooltip:
+            theme: dark
+          dataLabels:
+            style: { colors: ['#000000'], fontWeight: 800 }
+            background: { enabled: false }
+          plotOptions:
+            bar: { columnWidth: '80%' }
+        series:
+          - entity: sensor.total_solar_production
+            name: Production (kWh)
+            type: column
+            color: '#fcee0a'
+            statistics:
+              type: change
+              period: month
+            show:
+              datalabels: true
+
+      - type: custom:apexcharts-card
+        update_delay: 3s
+        update_interval: 1h
+        graph_span: 30d
+        span:
+          end: day
+        style: >
+          ha-card { background: #0a0f1a; border: 1px solid #00e5ff; border-radius: 8px; margin-bottom: 0px; }
+        header:
+          show: true
+          title: '[ HISTORIQUE JOURNALIER (30 JOURS) ]'
+          show_states: false
+        apex_config:
+          chart:
+            height: 280
+            foreColor: '#8cd4ff'
+            background: '#0a0f1a'
+            toolbar: { show: false }
+          grid:
+            borderColor: rgba(255,255,255,0.05)
+          tooltip:
+            theme: dark
+          dataLabels:
+            enabled: true
+            style: { colors: ['#000000'], fontWeight: 800, fontSize: '9px' }
+            background: { enabled: false }
+          plotOptions:
+            bar: { columnWidth: '80%' }
+        series:
+          - entity: sensor.daily_solar_production
+            name: Production (kWh)
+            type: column
+            color: '#00ff77'
+            statistics:
+              type: state
+              period: day
+            show:
+              datalabels: true
