@@ -1,0 +1,184 @@
+# ==============================================================================
+# TEMPLATES : CALCUL DES CONSIGNES ZENDURE (V8.6)
+# ==============================================================================
+template:
+  - sensor:
+      # ------------------------------------------------------------------------
+      # KIT 1
+      # ------------------------------------------------------------------------
+      - name: "Consigne Idéale Kit 1"
+        unique_id: consigne_ideale_kit_1
+        unit_of_measurement: "W"
+        state: >
+          {# === CONFIGURATION : KIT 1 (V8.6 - Vases Communicants) === #}
+          {% set ent_limite_max = 'input_number.limite_injection_max_ha' %}
+          {% set ent_shelly = 'sensor.main_power_meter' %}
+          {% set ent_mode_hiver = 'input_boolean.mode_hiver' %}
+
+          {# Gros Consommateurs (Exclus du Zéro Export Hivernal) #}
+          {% set ent_air_fryer = 'sensor.airfryer_power' %}
+          {% set ent_four = 'sensor.four_power' %}
+          {% set ent_lave_vaisselle = 'sensor.lave_vaisselle_power' %}
+          {% set ent_machine_a_laver = 'sensor.machine_a_laver_power' %}
+          {% set ent_compresseur = 'sensor.compresseur_power' %}
+          {% set ent_rad_1 = 'sensor.chauffage_chambre_1_power' %}
+          {% set ent_rad_2 = 'sensor.chauffage_chambre_2_power' %}
+          {% set ent_micro_onde = 'sensor.micro_onde_power' %}
+          {% set ent_clim = 'sensor.clim_power' %}
+          {% set ent_prise_add = 'sensor.prise_additionnelle_1_power' %}
+
+          {# Télémétrie Kits MQTT & Seuils SOC #}
+          {% set cible_minsoc_1 = states('input_number.target_min_soc_kit_1') | float(10) %}
+          {% set pv_1 = states('sensor.zendure_kit_1_solar_power') | float(0) %}
+          {% set soc_1 = states('sensor.zendure_kit_1_soc') | float(0) %}
+          {% set inj_1 = states('sensor.zendure_kit_1_output_power') | float(0) %} 
+          {% set ac_1 = states('sensor.zendure_kit_1_grid_power') | float(0) %}
+
+          {% set cible_minsoc_2 = states('input_number.target_min_soc_kit_2') | float(10) %}
+          {% set pv_2 = states('sensor.zendure_kit_2_solar_power') | float(0) %}
+          {% set soc_2 = states('sensor.zendure_kit_2_soc') | float(0) %}
+          {% set inj_2 = states('sensor.zendure_kit_2_output_power') | float(0) %} 
+          {% set ac_2 = states('sensor.zendure_kit_2_grid_power') | float(0) %}
+
+          {% set cible_minsoc_3 = states('input_number.target_min_soc_kit_3') | float(10) %}
+          {% set pv_3 = states('sensor.zendure_kit_3_solar_power') | float(0) %}
+          {% set soc_3 = states('sensor.zendure_kit_3_soc') | float(0) %}
+          {% set inj_3 = states('sensor.zendure_kit_3_output_power') | float(0) %} 
+          {% set ac_3 = states('sensor.zendure_kit_3_grid_power') | float(0) %}
+
+          {% set pv_tot = pv_1 + pv_2 + pv_3 %}
+          {% set inj_tot = inj_1 + inj_2 + inj_3 %}
+          {% set ac_tot = ac_1 + ac_2 + ac_3 %}
+          {% set shelly = states(ent_shelly) | float(0) %}
+          {% set limite_totale = states(ent_limite_max) | float(800) %}
+
+          {% set hiver = is_state(ent_mode_hiver, 'on') %}
+          {% set eponge_active = (ac_tot > 0) %}
+
+          {# Calcul Puissance Gros Consommateurs #}
+          {% set pwr_air_fryer = states(ent_air_fryer) | float(0) %}
+          {% set pwr_four = states(ent_four) | float(0) %}
+          {% set pwr_lave_vaisselle = states(ent_lave_vaisselle) | float(0) %}
+          {% set pwr_machine_a_laver = states(ent_machine_a_laver) | float(0) %}
+          {% set pwr_compresseur = states(ent_compresseur) | float(0) %}
+          {% set pwr_rad_1 = states(ent_rad_1) | float(0) %}
+          {% set pwr_rad_2 = states(ent_rad_2) | float(0) %}
+          {% set pwr_micro_onde = states(ent_micro_onde) | float(0) %}
+          {% set pwr_clim = states(ent_clim) | float(0) %}
+          {% set pwr_prise_add = states(ent_prise_add) | float(0) %}
+
+          {% set deduction_hiver = 0 %}
+          {% if hiver %}
+              {% set deduction_hiver = (pwr_air_fryer if pwr_air_fryer > 30 else 0) +
+                                       (pwr_four if pwr_four > 30 else 0) +
+                                       (pwr_lave_vaisselle if pwr_lave_vaisselle > 30 else 0) +
+                                       (pwr_machine_a_laver if pwr_machine_a_laver > 30 else 0) +
+                                       (pwr_compresseur if pwr_compresseur > 30 else 0) +
+                                       (pwr_rad_1 if pwr_rad_1 > 30 else 0) +
+                                       (pwr_rad_2 if pwr_rad_2 > 30 else 0) +
+                                       (pwr_micro_onde if pwr_micro_onde > 30 else 0) +
+                                       (pwr_clim if pwr_clim > 30 else 0) +
+                                       (pwr_prise_add if pwr_prise_add > 30 else 0) %}
+          {% endif %}
+
+          {# 1. CIBLE MAISON #}
+          {% set coussin = 40 if eponge_active else 7 %}
+          {% set conso_brute = inj_tot + shelly - ac_tot - coussin %}
+          {% set maison_totale = [conso_brute, 0] | max %}
+          {% set maison_batterie = [conso_brute - deduction_hiver, 0] | max %}
+
+          {# 2. RÔLES #}
+          {% set mode_jour = (pv_tot > 100) %}
+          {% set maitre = states('input_select.kit_maitre_solaire') %}
+          {% set est_maitre_1 = (maitre == 'kit_1') %}
+          {% set est_maitre_2 = (maitre == 'kit_2') %}
+          {% set est_maitre_3 = (maitre == 'kit_3') %}
+
+          {# 3. STATUTS #}
+          {% set jour_1 = (pv_1 > 20) %}
+          {% set jour_2 = (pv_2 > 20) %}
+          {% set jour_3 = (pv_3 > 20) %}
+          {% set prod_suffisante = (maison_totale <= pv_tot) %}
+
+          {% set bat_pleine_1 = is_state('input_boolean.bypass_kit_1', 'on') %}
+          {% set bat_pleine_2 = is_state('input_boolean.bypass_kit_2', 'on') %}
+          {% set bat_pleine_3 = is_state('input_boolean.bypass_kit_3', 'on') %}
+
+          {% set bypass_1 = bat_pleine_1 and jour_1 and prod_suffisante %}
+          {% set bypass_2 = bat_pleine_2 and jour_2 and prod_suffisante %}
+          {% set bypass_3 = bat_pleine_3 and jour_3 and prod_suffisante %}
+
+          {% set sprint_1 = (soc_1 | round(0) >= 98) and not bat_pleine_1 and jour_1 and (pv_1 > 150) %}
+          {% set sprint_2 = (soc_2 | round(0) >= 98) and not bat_pleine_2 and jour_2 and (pv_2 > 150) %}
+          {% set sprint_3 = (soc_3 | round(0) >= 98) and not bat_pleine_3 and jour_3 and (pv_3 > 150) %}
+
+          {# 4. SÉPARATION SOLAIRE DIRECT #}
+          {% set pv_utile_1 = pv_1 if not bypass_1 and not sprint_1 else 0 %}
+          {% set pv_utile_2 = pv_2 if not bypass_2 and not sprint_2 else 0 %}
+          {% set pv_utile_3 = pv_3 if not bypass_3 and not sprint_3 else 0 %}
+          {% set pv_utile_tot = pv_utile_1 + pv_utile_2 + pv_utile_3 %}
+
+          {% set inj_bypass_tot = (pv_1 if bypass_1 else 0) + (pv_2 if bypass_2 else 0) + (pv_3 if bypass_3 else 0) %}
+          {% set besoin_net = [maison_totale - inj_bypass_tot, 0] | max %}
+
+          {# 5. PARTAGE SOLAIRE #}
+          {% set pv_utile_maitre = (pv_utile_1 if est_maitre_1 else 0) + (pv_utile_2 if est_maitre_2 else 0) + (pv_utile_3 if est_maitre_3 else 0) %}
+          {% set pv_utile_esclaves_tot = pv_utile_tot - pv_utile_maitre %}
+          {% set besoin_apres_maitre = [besoin_net - pv_utile_maitre, 0] | max %}
+
+          {% if mode_jour %}
+              {% if est_maitre_1 %}
+                  {% set part_sol_1 = [besoin_net, pv_utile_1] | min %}
+              {% else %}
+                  {% set ratio_1 = (pv_utile_1 / pv_utile_esclaves_tot) if pv_utile_esclaves_tot > 0 else 0 %}
+                  {% set part_sol_1 = [besoin_apres_maitre * ratio_1, pv_utile_1] | min %}
+              {% endif %}
+          {% else %}
+              {% set ratio_1 = (pv_utile_1 / pv_utile_tot) if pv_utile_tot > 0 else 0 %}
+              {% set part_sol_1 = [besoin_net * ratio_1, pv_utile_1] | min %}
+          {% endif %}
+
+          {# 6. PARTAGE BATTERIE #}
+          {% set est_jour_gris_1 = (pv_1 > 10 and pv_1 < 100) %}
+          {% set marge_1 = 10 if est_jour_gris_1 else 2 %}
+
+          {% set bat_ok_1 = (soc_1 > cible_minsoc_1 + marge_1) and not bypass_1 and not sprint_1 %}
+          {% set bat_ok_2 = (soc_2 > cible_minsoc_2 + 2) and not bypass_2 and not sprint_2 %}
+          {% set bat_ok_3 = (soc_3 > cible_minsoc_3 + 2) and not bypass_3 and not sprint_3 %}
+
+          {% set besoin_bat_brut = [maison_batterie - inj_bypass_tot - pv_utile_tot, 0] | max %}
+          {% set besoin_bat = [besoin_bat_brut, limite_totale] | min %}
+
+          {% set util_1 = [((soc_1 - cible_minsoc_1) / (100 - cible_minsoc_1) * 100), 0] | max if cible_minsoc_1 < 100 else 0 %}
+          {% set util_2 = [((soc_2 - cible_minsoc_2) / (100 - cible_minsoc_2) * 100), 0] | max if cible_minsoc_2 < 100 else 0 %}
+          {% set util_3 = [((soc_3 - cible_minsoc_3) / (100 - cible_minsoc_3) * 100), 0] | max if cible_minsoc_3 < 100 else 0 %}
+
+          {% set w_1 = (util_1 ** 2) if bat_ok_1 else 0 %}
+          {% set w_2 = (util_2 ** 2) if bat_ok_2 else 0 %}
+          {% set w_3 = (util_3 ** 2) if bat_ok_3 else 0 %}
+          {% set w_tot = w_1 + w_2 + w_3 %}
+
+          {% set part_bat_1 = (w_1 / w_tot * besoin_bat) if w_tot > 0 else 0 %}
+
+          {# 7. CONSIGNE FINALE #}
+          {% set tampon_bypass = 15 %}
+          {% set marge_anti_nuage = 100 %}
+          {% set all_bypass = bypass_1 and bypass_2 and bypass_3 %}
+
+          {% if all_bypass %}
+              {% set ratio = (pv_1 / pv_tot) if pv_tot > 0 else 0 %}
+              {% set besoin_lisse = (maison_totale * ratio) + marge_anti_nuage %}
+              {% set consigne = [besoin_lisse, pv_1] | min %}
+          {% elif bypass_1 %}
+              {% set consigne = [pv_1 - tampon_bypass, 0] | max %}
+          {% elif sprint_1 %}
+              {% set consigne = 0 %}
+          {% else %}
+              {% if part_bat_1 <= 0 %}
+                  {% set consigne = [part_sol_1, [pv_1 - 5, 0] | max] | min %}
+              {% else %}
+                  {% set consigne = part_sol_1 + part_bat_1 %}
+              {% endif %}
+          {% endif %}
+
+          {{ [consigne, 800] | min | round(0) }}
