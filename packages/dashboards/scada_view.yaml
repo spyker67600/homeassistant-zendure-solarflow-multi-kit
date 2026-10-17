@@ -1,0 +1,822 @@
+type: custom:html-template-card
+ignore_line_breaks: true
+content: >
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Space+Mono:wght@400;700&display=swap');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    #cyber-deck-v14 {
+      background: #020617;
+      font-family: 'Outfit', sans-serif;
+      padding: 24px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+      color: #f8fafc;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      #cyber-deck-v14 { padding: 14px; }
+      .cd-title { font-size: 16px; }
+      .price-box { font-size: 11px; padding: 4px 8px; }
+    }
+
+    .cd-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 10px; }
+    .cd-title { font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #38bdf8; text-transform: uppercase; }
+    
+    .header-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    
+    .price-box { 
+      font-family: 'Space Mono', monospace; 
+      font-size: 13px; 
+      background: rgba(245, 158, 11, 0.1); 
+      border: 1px solid #f59e0b; 
+      color: #fcd34d; 
+      padding: 6px 12px; 
+      border-radius: 8px; 
+      font-weight: 700; 
+      letter-spacing: 0.5px; 
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      cursor: pointer; 
+      transition: all 0.2s ease; 
+    }
+    .price-box:hover { background: rgba(245, 158, 11, 0.25); transform: scale(1.05); box-shadow: 0 0 15px rgba(245, 158, 11, 0.4); }
+    
+    .cd-live { font-family: 'Space Mono', monospace; font-size: 12px; color: #10b981; display: flex; align-items: center; gap: 8px; letter-spacing: 1px;}
+    .cd-dot { width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px #10b981; animation: pulseLive 1s infinite alternate; }
+    @keyframes pulseLive { from { opacity: 0.3; } to { opacity: 1; } }
+
+    .top-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    
+    .ideal-row { display: flex; align-items: center; background: #0b1121; border-radius: 12px; padding: 12px 14px; flex-wrap: wrap; gap: 15px; }
+    .top-wrapper .ideal-row { margin-bottom: 0; }
+    .box-cibles { border: 1px dashed #38bdf8; }
+    .box-hivernage { border: 1px dashed #64748b; }
+    
+    .ideal-title { font-size: 12px; color: #38bdf8; font-weight: 800; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+    .ideal-metrics { display: flex; gap: 10px; flex-wrap: wrap; }
+    .ideal-box { display: flex; align-items: center; gap: 8px; background: #1e293b; padding: 6px 10px; border-radius: 8px; }
+    .ideal-label { font-size: 10px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; }
+    .ideal-val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #fff; text-shadow: 0 0 8px rgba(56, 189, 248, 0.5); }
+    
+    .winter-alert-container { display: flex; align-items: center; justify-content: flex-end; flex-grow: 1; min-width: 150px; }
+    .winter-alert-danger { background: rgba(220, 38, 38, 0.15); border: 1px solid #dc2626; color: #ef4444; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 10px; letter-spacing: 1px; line-height: 1.4; text-align: center; animation: blinkAlert 1.5s infinite; }
+    .winter-alert-safe { background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 10px; letter-spacing: 1px; line-height: 1.4; text-align: center; }
+    @keyframes blinkAlert { 0%, 100% { box-shadow: 0 0 15px rgba(220, 38, 38, 0.4); opacity: 1; } 50% { box-shadow: 0 0 0px rgba(220, 38, 38, 0); opacity: 0.6; } }
+
+    .controls-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .control-box { display: flex; flex-direction: column; background: #0b1121; border-radius: 12px; padding: 14px; gap: 15px; }
+    .box-pilotage { border: 1px dashed #a855f7; }
+    .box-limite { border: 1px dashed #d946ef; } 
+    .box-calibrage { border: 1px dashed #ef4444; }
+    .box-minsoc { border: 1px dashed #38bdf8; }
+    .control-title { font-size: 11px; font-weight: 800; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+    .title-pilotage { color: #a855f7; }
+    .title-limite { color: #d946ef; }
+    .title-calibrage { color: #ef4444; }
+    .title-minsoc { color: #38bdf8; }
+    .btn-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .relay-row { display: flex; flex-direction: column; background: #0b1121; border: 1px dashed #f59e0b; border-radius: 12px; padding: 16px 14px; margin-bottom: 24px; gap: 15px; }
+    .relay-header { font-size: 12px; color: #f59e0b; font-weight: 800; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+    .relay-content { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }
+    .relay-group { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 140px; background: rgba(30, 41, 59, 0.4); padding: 12px; border-radius: 10px; border: 1px solid #1e293b; }
+    .relay-title { font-size: 11px; color: #94a3b8; font-weight: 800; letter-spacing: 2px; text-align: center; text-transform: uppercase; margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
+    .relay-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: #fff; text-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+
+    .heavy-row { background: #0b1121; border: 1px dashed #ef4444; border-radius: 12px; padding: 16px 14px; margin-bottom: 24px; }
+    .heavy-header { font-size: 12px; color: #ef4444; font-weight: 800; letter-spacing: 2px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; margin-bottom: 15px;}
+    .heavy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 10px; }
+    .heavy-item { background: rgba(30, 41, 59, 0.4); border: 1px solid #1e293b; padding: 10px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: all 0.3s; cursor: pointer; }
+    .heavy-item:hover { transform: scale(1.05); border-color: #ef4444; }
+    .heavy-item.active { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+    .heavy-icon { font-size: 20px; }
+    .heavy-name { font-size: 9px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-align: center; }
+    .heavy-val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #fff; }
+    .heavy-val.active { color: #ef4444; text-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+
+    .control-badge { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; border: 1px solid #334155; }
+    .control-badge:hover { transform: scale(1.05); }
+    .control-badge.active { background: rgba(16, 185, 129, 0.15); border-color: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+    .control-badge.inactive { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+    .control-badge.pending { background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+    .control-badge.limit { background: rgba(217, 70, 239, 0.15); border-color: #d946ef; box-shadow: 0 0 10px rgba(217, 70, 239, 0.2); } 
+    .control-badge.minsoc { background: rgba(56, 189, 248, 0.15); border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+    .age-badge { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; gap: 6px; padding: 4px 8px; border-radius: 6px; border: 1px solid #334155; background: rgba(15, 23, 42, 0.8); }
+    .age-safe { color: #10b981; }
+    .age-warn { color: #f59e0b; }
+    .age-alert { color: #ef4444; animation: blinkAlert 1.5s infinite; }
+
+    .kits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+
+    .kit-blade { background: #0b1121; border-radius: 18px; border: 1px solid #1e293b; padding: 18px 10px; display: flex; flex-direction: column; align-items: center; position: relative; }
+    .kit-name { font-size: 15px; color: #94a3b8; font-weight: 800; letter-spacing: 3px; margin-bottom: 14px; text-transform: uppercase; }
+    
+    .pill { background: #1e293b; border: 1px solid #334155; padding: 8px 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; min-width: 90px; z-index: 2; }
+    .pill-title { font-size: 10px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; margin-bottom: 2px; display: flex; gap: 6px; align-items: center; }
+    .pill-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: #fff; }
+
+    @keyframes pulseLiquid { 0% { opacity: 0.7; filter: brightness(1); box-shadow: 0 0 4px var(--lvl-c); } 100% { opacity: 1; filter: brightness(1.3); box-shadow: 0 0 16px var(--lvl-c); } }
+    @keyframes pulseBorder { 0% { box-shadow: 0 0 0px var(--lvl-c); border-color: #475569; } 100% { box-shadow: 0 0 15px var(--lvl-c); border-color: var(--lvl-c); } }
+    .pulse-charge { animation: pulseLiquid 0.8s infinite alternate; }
+    .pulse-discharge { animation: pulseBorder 0.8s infinite alternate; }
+
+    .time-box { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; padding: 12px 14px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .time-label { font-size: 10px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; }
+    .time-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; text-shadow: 0 0 6px rgba(255,255,255,0.2); }
+
+    .tie-row { display: flex; align-items: center; justify-content: space-between; background: #0b1121; border-radius: 20px; border: 1px solid #1e293b; padding: 14px; margin-bottom: 24px; }
+    .tie-node { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 180px; padding: 14px; border-radius: 14px; background: #1e293b; border: 2px solid var(--c); z-index: 2; box-shadow: inset 0 0 15px rgba(0,0,0,0.4); text-align: center; }
+    .tie-icon { font-size: 26px; margin-bottom: 6px; filter: drop-shadow(0 0 6px var(--c)); }
+    .tie-title { font-size: 10px; color: #94a3b8; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .tie-val { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #fff; text-shadow: 0 0 10px var(--c); margin-top: 4px; }
+
+    .tie-node-sub { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 180px; padding: 8px; border-radius: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--c); z-index: 2; text-align: center; }
+    .tie-sub-title { font-size: 9px; color: var(--c); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+    .tie-sub-val { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: #fff; text-shadow: 0 0 8px var(--c); margin-top: 2px; }
+
+    .flux-container { flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; min-width: 40px; }
+    .track-bg { stroke: #1e293b; stroke-width: 4; stroke-linecap: round; fill: none; }
+    .flow-active { stroke: var(--c); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 4 8; animation: flowAnim 0.3s linear infinite; fill: none; }
+    @keyframes flowAnim { to { stroke-dashoffset: -12; } }
+
+    @media (max-width: 950px) { .tie-row { flex-direction: column; gap: 10px; } .flux-container { width: 40px; height: 40px; flex: none; } .desktop-svg { display: none; } .mobile-svg { display: block; } }
+    @media (min-width: 951px) { .mobile-svg { display: none; } }
+
+    .metric-card { background: #0b1121; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; border-left: 4px solid var(--theme); }
+    .mc-title { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; }
+    .mc-val { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; color: #f8fafc; }
+    .mc-unit { font-size: 10px; color: var(--theme); margin-left: 4px; }
+  </style>
+
+  {# --- VARIABLES MÉTÉO ET LOGIQUE ALERTE HIVER --- #}
+  {% set temp_ext = states('sensor.home_exterior_temperature') | float(15) %}
+  {% set gel_ext = states('sensor.home_freeze_chance') | float(0) %}
+  {% set prev_demain = states('sensor.prevision_solaire_demain_total') | float(0) | round(1) %}
+
+  {# --- VARIABLES SOC MINI (Matériel) ET CIBLES (Virtuelles) --- #}
+  {% set minsoc_at = states('number.zendure_kit_1_minsoc') | float(0) | round(0) %}
+  {% set minsoc_es = states('number.zendure_kit_2_minsoc') | float(0) | round(0) %}
+  {% set minsoc_ou = states('number.zendure_kit_3_minsoc') | float(0) | round(0) %}
+
+  {% set cible_min_soc_at = states('input_number.target_min_soc_kit_1') | float(0) | round(0) %}
+  {% set cible_min_soc_es = states('input_number.target_min_soc_kit_2') | float(0) | round(0) %}
+  {% set cible_min_soc_ou = states('input_number.target_min_soc_kit_3') | float(0) | round(0) %}
+
+  {% set t_at = states('sensor.zendure_kit_1_internal_temp') | float(0) | round(1) %}
+  {% set t_es = states('sensor.zendure_kit_2_internal_temp') | float(0) | round(1) %}
+  {% set t_ou = states('sensor.zendure_kit_3_internal_temp') | float(0) | round(1) %}
+
+  {% set froid_detecte = (temp_ext < 5) or (gel_ext > 0) or (t_at < 10) or (t_es < 10) or (t_ou < 10) %}
+  {% set config_vulnerable = (cible_min_soc_at < 30) or (cible_min_soc_es < 30) or (cible_min_soc_ou < 30) %}
+
+  {# --- VARIABLES DES CONSIGNES HA --- #}
+  {% set ideal_at = states('sensor.consigne_ideale_kit_1') | float(0) | round(0) %}
+  {% set ideal_es = states('sensor.consigne_ideale_kit_2') | float(0) | round(0) %}
+  {% set ideal_ou = states('sensor.consigne_ideale_kit_3') | float(0) | round(0) %}
+
+  {# --- VARIABLES DE CONTROLE HA ET CALIBRAGE --- #}
+  {% set etat_pilotage = states('input_boolean.pilotage_ha_zendure') %}
+  {% set limite_ha = states('input_number.limite_injection_max_ha') | float(0) | round(0) %}
+  {% set mode_reseau = states('input_boolean.mode_zensdk_zendure') %}
+  {% set mode_export = states('input_boolean.export_solaire_zendure') %}
+
+  {% set calib_at = states('input_boolean.calibrage_lfp_kit_1') %}
+  {% set calib_es = states('input_boolean.calibrage_lfp_kit_2') %}
+  {% set calib_ou = states('input_boolean.calibrage_lfp_kit_3') %}
+
+  {% set arme_at = states('input_boolean.armement_calibrage_kit_1') %}
+  {% set arme_es = states('input_boolean.armement_calibrage_kit_2') %}
+  {% set arme_ou = states('input_boolean.armement_calibrage_kit_3') %}
+
+  {# --- VARIABLES DE DECOMPTE --- #}
+  {% set dec_at = states('sensor.decompte_calibrage_kit_1') | int(0) %}
+  {% set dec_es = states('sensor.decompte_calibrage_kit_2') | int(0) %}
+  {% set dec_ou = states('sensor.decompte_calibrage_kit_3') | int(0) %}
+
+  {# --- VARIABLES DES COMPTEURS DE RELAIS ZENDURE --- #}
+  {% set rel_at_ac = states('counter.commutations_kit_1_ac_mode') | int(0) %}
+  {% set rel_at_gr = states('counter.commutations_kit_1_grid_reverse') | int(0) %}
+  {% set rel_es_ac = states('counter.commutations_kit_2_ac_mode') | int(0) %}
+  {% set rel_es_gr = states('counter.commutations_kit_2_grid_reverse') | int(0) %}
+  {% set rel_ou_ac = states('counter.commutations_kit_3_ac_mode') | int(0) %}
+  {% set rel_ou_gr = states('counter.commutations_kit_3_grid_reverse') | int(0) %}
+
+  {# --- NOUVEAU : VARIABLES GROS CONSOMMATEURS --- #}
+  {% set pwr_four = states('sensor.four_power') | float(0) %}
+  {% set pwr_air_fryer = states('sensor.airfryer_power') | float(0) %}
+  {% set pwr_lv = states('sensor.lave_vaisselle_power') | float(0) %}
+  {% set pwr_ml = states('sensor.machine_a_laver_power') | float(0) %}
+  {% set pwr_comp = states('sensor.compresseur_power') | float(0) %}
+  {% set pwr_rad_j = states('sensor.chauffage_chambre_1_power') | float(0) %}
+  {% set pwr_rad_m = states('sensor.chauffage_chambre_2_power') | float(0) %}
+  {% set pwr_mo = states('sensor.micro_onde_power') | float(0) %}
+  {% set pwr_clim = states('sensor.clim_power') | float(0) %}
+
+  {# --- CALCULS DES COUTS DYNAMIQUES --- #}
+  {% set prix_elec = states('input_number.prix_kwh_electricite') | float(0.1985) %}
+  {% set conso_hier = states('input_number.linky_conso_hier') | float(0) %}
+  {% set cout_hier = conso_hier * prix_elec %}
+  {% set cout_jour_brut = states('sensor.linky_cout_journalier') | float(0) %}
+  {% set conso_jour_deduite = cout_jour_brut / 0.1985 %}
+  {% set cout_jour_dynamique = conso_jour_deduite * prix_elec %}
+
+  {# --- RÉCUPÉRATION DES AUTRES VARIABLES --- #}
+  {% set p_at_tot = states('sensor.zendure_kit_1_solar_power') | float(0) %}
+  {% set p_es_tot = states('sensor.zendure_kit_2_solar_power') | float(0) %}
+  {% set p_ou_tot = states('sensor.zendure_kit_3_solar_power') | float(0) %}
+  {% set total_solar = p_at_tot + p_es_tot + p_ou_tot %}
+
+  {% set pv1_at = states('sensor.zendure_kit_1_solar_power1') | float(0) %}
+  {% set pv2_at = states('sensor.zendure_kit_1_solar_power2') | float(0) %}
+  {% set pv1_es = states('sensor.zendure_kit_2_solar_power1') | float(0) %}
+  {% set pv2_es = states('sensor.zendure_kit_2_solar_power2') | float(0) %}
+  {% set pv1_ou = states('sensor.zendure_kit_3_solar_power1') | float(0) %}
+  {% set pv2_ou = states('sensor.zendure_kit_3_solar_power2') | float(0) %}
+
+  {% set h_at = states('sensor.zendure_kit_1_output_power') | float(0) %}
+  {% set h_es = states('sensor.zendure_kit_2_output_power') | float(0) %}
+  {% set h_ou = states('sensor.zendure_kit_3_output_power') | float(0) %}
+
+  {% set b_at = states('sensor.zendure_kit_1_bat_power') | float(0) %}
+  {% set b_es = states('sensor.zendure_kit_2_bat_power') | float(0) %}
+  {% set b_ou = states('sensor.zendure_kit_3_bat_power') | float(0) %} 
+
+  {% set soc_at = states('sensor.zendure_kit_1_soc') | int(0) %}
+  {% set soc_es = states('sensor.zendure_kit_2_soc') | int(0) %}
+  {% set soc_ou = states('sensor.zendure_kit_3_soc') | int(0) %} 
+
+  {% set r_at = states('sensor.zendure_kit_1_remaining_time') | float(0) %}
+  {% set r_es = states('sensor.zendure_kit_2_remaining_time') | float(0) %}
+  {% set r_ou = states('sensor.zendure_kit_3_remaining_time') | float(0) %}
+
+  {% set h_at_time = r_at | int %}
+  {% set m_at_time = ((r_at - h_at_time) * 60) | int %}
+  {% set rem_at = (h_at_time ~ "h " ~ (m_at_time if m_at_time > 9 else "0" ~ m_at_time)) if r_at > 0 else "--h --" %}
+  {% set h_es_time = r_es | int %}
+  {% set m_es_time = ((r_es - h_es_time) * 60) | int %}
+  {% set rem_es = (h_es_time ~ "h " ~ (m_es_time if m_es_time > 9 else "0" ~ m_es_time)) if r_es > 0 else "--h --" %}
+  {% set h_ou_time = r_ou | int %}  
+  {% set m_ou_time = ((r_ou - h_ou_time) * 60) | int %}
+  {% set rem_ou = (h_ou_time ~ "h " ~ (m_ou_time if m_ou_time > 9 else "0" ~ m_ou_time)) if r_ou > 0 else "--h --" %}
+
+  {% set p_grid = states('sensor.main_power_meter') | float(0) %}
+  {% set p_grid_abs = p_grid | abs %}
+  {% set is_exporting = p_grid < 0 %}
+  {% set grid_color = '#10b981' if is_exporting else '#ef4444' %}
+  {% set p_house_brut = [((h_at + h_es + h_ou) + p_grid), 0] | max %}  
+
+  {# --- VARIABLES POUR L'ÉPONGE --- #}
+  {% set ac_at = states('sensor.zendure_kit_1_grid_power') | float(0) %}
+  {% set ac_es = states('sensor.zendure_kit_2_grid_power') | float(0) %}
+  {% set ac_ou = states('sensor.zendure_kit_3_grid_power') | float(0) %}
+  {% set p_eponge = ac_at + ac_es + ac_ou %}
+  {% set p_house_net = [p_house_brut - p_eponge, 0] | max %}
+  {% set source_eponge = states('sensor.source_charge_croisee') %}
+
+  {# MACRO : MODULE ZENDURE #}
+  {% macro kit_module(name, p_pv1, p_pv2, p_pv_total, p_hub_out, p_bat, soc, temp, rem_time) %}
+    
+    {% set is_charging = p_bat < -2 %}
+    {% set is_discharging = p_bat > 2 %}
+    
+    {% if soc >= 85 %}{% set bat_level_color = '#10b981' %}
+    {% elif soc >= 30 %}{% set bat_level_color = '#f59e0b' %}
+    {% else %}{% set bat_level_color = '#ef4444' %}{% endif %}
+    
+    {% if is_charging %}
+      {% set t_label = 'RECHARGE COMPLÈTE' %}
+      {% set t_color = '#10b981' %}
+    {% elif is_discharging %}
+      {% set t_label = 'DÉCHARGE COMPLÈTE' %}
+      {% set t_color = '#a855f7' %}
+    {% else %}
+      {% set t_label = 'EN VEILLE' %}
+      {% set t_color = '#64748b' %}
+    {% endif %}
+
+    <div class="kit-blade">
+      <div class="kit-name">{{ name }}</div>
+      
+      <!-- PV1 ET PV2 INDIVIDUELS -->
+      <div style="display: flex; justify-content: space-around; width: 100%; gap: 10px; margin-bottom: 4px;">
+        <div class="pill" style="border-color: rgba(245,158,11,0.5); min-width: 80px;">
+          <div class="pill-title">PV 1</div>
+          <div class="pill-val" style="text-shadow: 0 0 10px #f59e0b; font-size: 14px;">{{ p_pv1 | round(0) }} W</div>
+        </div>
+        <div class="pill" style="border-color: rgba(245,158,11,0.5); min-width: 80px;">
+          <div class="pill-title">PV 2</div>
+          <div class="pill-val" style="text-shadow: 0 0 10px #f59e0b; font-size: 14px;">{{ p_pv2 | round(0) }} W</div>
+        </div>
+      </div>
+
+      <!-- ROUTEUR SVG : PV1 & PV2 -> TOTAL PV -->
+      <svg width="100%" height="45" style="overflow: visible; margin-bottom: 4px;">
+        <line x1="25%" y1="0" x2="25%" y2="25" class="track-bg" />
+        <line x1="25%" y1="25" x2="50%" y2="25" class="track-bg" />
+        <line x1="75%" y1="0" x2="75%" y2="25" class="track-bg" />
+        <line x1="75%" y1="25" x2="50%" y2="25" class="track-bg" />
+        <line x1="50%" y1="25" x2="50%" y2="45" class="track-bg" />
+        <circle cx="50%" cy="25" r="4" fill="#0f172a" stroke="#334155" stroke-width="2" />
+
+        {% if p_pv1 > 2 %}
+          <line x1="25%" y1="0" x2="25%" y2="25" class="flow-active" style="--c:#f59e0b;" />
+          <line x1="25%" y1="25" x2="50%" y2="25" class="flow-active" style="--c:#f59e0b;" />
+        {% endif %}
+        
+        {% if p_pv2 > 2 %}
+          <line x1="75%" y1="0" x2="75%" y2="25" class="flow-active" style="--c:#f59e0b;" />
+          <line x1="75%" y1="25" x2="50%" y2="25" class="flow-active" style="--c:#f59e0b;" />
+        {% endif %}
+
+        {% if p_pv_total > 4 %}
+          <line x1="50%" y1="25" x2="50%" y2="45" class="flow-active" style="--c:#f59e0b;" />
+          <circle cx="50%" cy="25" r="4" fill="#0f172a" stroke="#f59e0b" stroke-width="2" />
+        {% endif %}
+      </svg>
+      
+      <!-- PV TOTAL AVEC TEMPÉRATURE -->
+      <div class="pill" style="border-color: rgba(245,158,11,0.8); min-width: 130px;">
+        <div class="pill-title">TOTAL <span style="color:#f97316; margin-left:6px;">{{ temp }}°C</span></div>
+        <div class="pill-val" style="text-shadow: 0 0 10px #f59e0b;">{{ p_pv_total | round(0) }} W</div>
+      </div>
+      
+      <!-- ROUTEUR SVG : TOTAL PV -> BATTERIE / MAISON -->
+      <svg width="100%" height="70" style="margin-top: 4px; overflow: visible;">
+        <line x1="50%" y1="0" x2="50%" y2="35" class="track-bg" />
+        <line x1="25%" y1="35" x2="75%" y2="35" class="track-bg" />
+        <line x1="25%" y1="35" x2="25%" y2="70" class="track-bg" />
+        <line x1="75%" y1="35" x2="75%" y2="70" class="track-bg" />
+        <circle cx="50%" cy="35" r="5" fill="#0f172a" stroke="#334155" stroke-width="3" />
+
+        {% if p_pv_total > 4 %}
+          <line x1="50%" y1="0" x2="50%" y2="35" class="flow-active" style="--c:#f59e0b;" />
+          <circle cx="50%" cy="35" r="5" fill="#0f172a" stroke="#f59e0b" stroke-width="3" />
+        {% endif %}
+
+        {% if is_charging %}
+          <line x1="50%" y1="35" x2="25%" y2="35" class="flow-active" style="--c:#10b981;" />
+          <line x1="25%" y1="35" x2="25%" y2="70" class="flow-active" style="--c:#10b981;" />
+        {% elif is_discharging %}
+          <line x1="25%" y1="70" x2="25%" y2="35" class="flow-active" style="--c:#a855f7;" />
+          <line x1="25%" y1="35" x2="50%" y2="35" class="flow-active" style="--c:#a855f7;" />
+        {% endif %}
+
+        {% if p_hub_out > 4 %}
+          <line x1="50%" y1="35" x2="75%" y2="35" class="flow-active" style="--c:#38bdf8;" />
+          <line x1="75%" y1="35" x2="75%" y2="70" class="flow-active" style="--c:#38bdf8;" />
+        {% endif %}
+      </svg>
+      
+      <!-- BATTERIE & MAISON -->
+      <div style="position: relative; width: 100%; height: 86px;">
+        
+        <div style="position: absolute; left: 25%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div style="width: 44px; height: 60px; border: 2px solid #475569; border-radius: 6px; padding: 2px; position:relative; background:#0f172a; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;" class="{% if is_discharging %}pulse-discharge{% endif %}" style="--lvl-c: {{ bat_level_color }};">
+            <div style="position: absolute; top: -6px; left: 10px; right: 10px; height: 4px; background: #475569; border-radius: 2px 2px 0 0;"></div>
+            <div style="height: {{ soc }}%; background: {{ bat_level_color }}; width: 100%; border-radius: 2px; transition: height 0.5s;" class="{% if is_charging %}pulse-charge{% endif %}"></div>
+            <div style="position:absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; text-shadow:0 0 4px #000; z-index: 2;">{{ soc }}%</div>
+          </div>
+          <div style="font-size: 14px; font-weight: 700; font-family: 'Space Mono', monospace; color: {{ bat_level_color }};">{{ p_bat | abs | round(0) }} W</div>
+        </div>
+
+        <div style="position: absolute; left: 75%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          <div style="width: 44px; height: 60px; background: #0f172a; border: 2px solid #38bdf8; border-radius: 6px; display:flex; align-items:center; justify-content:center; font-size: 26px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">🏠</div>
+          <div style="font-size: 14px; font-weight: 700; font-family: 'Space Mono', monospace; color: #38bdf8; margin-top: 2px;">{{ p_hub_out | round(0) }} W</div>
+        </div>
+
+      </div>
+
+      <!-- MINI CASE DES TEMPS RESTANTS -->
+      <div class="time-box">
+        <div class="time-label">{{ t_label }}</div>
+        <div class="time-val" style="color: {{ t_color }}; font-size: 14px;">⏳ {{ rem_time }}</div>
+      </div>
+
+    </div>
+  {% endmacro %}
+
+
+  <div id="cyber-deck-v14">
+    
+    <div class="cd-header">
+      <div class="cd-title">Aegis-Zendure SCADA</div>
+      
+      <div class="header-right">
+        <!-- BADGE PRIX DYNAMIQUE -->
+        <div class="price-box" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_number.prix_kwh_electricite' } }));">
+          <span style="font-size: 14px;">⚡</span> {{ prix_elec }} €/kWh
+        </div>
+        
+        <div class="cd-live"><div class="cd-dot"></div> TÉLÉMÉTRIE OPTIMISÉE V19</div>
+      </div>
+    </div>
+
+    <!-- --- CADRE 1 : CIBLES HA & ÉTAT SOC MINI --- -->
+    <div class="top-wrapper">
+      
+      <!-- BLOC GAUCHE : CIBLES HA -->
+      <div class="ideal-row box-cibles">
+        <div class="ideal-title" style="color: #38bdf8;">🎯 Cibles HA :</div>
+        <div class="ideal-metrics">
+          <div class="ideal-box"><span class="ideal-label">KIT 1</span><span class="ideal-val">{{ ideal_at }} W</span></div>
+          <div class="ideal-box"><span class="ideal-label">KIT 2</span><span class="ideal-val">{{ ideal_es }} W</span></div>
+          <div class="ideal-box"><span class="ideal-label">KIT 3</span><span class="ideal-val">{{ ideal_ou }} W</span></div>
+        </div>
+      </div>
+
+      <!-- BLOC DROIT : ÉTAT SOC MINI (Affiche le matériel) -->
+      <div class="ideal-row box-hivernage">
+        
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; width: 100%;">
+          <div class="ideal-title" style="color: #94a3b8; width: 100%;">🔋 ÉTAT SOC MINI :</div>
+          <div class="ideal-metrics" style="width: 100%;">
+            <!-- KIT 1 -->
+            <div class="ideal-box" style="border: 1px solid {% if minsoc_at >= 30 %}rgba(16,185,129,0.3){% else %}rgba(245,158,11,0.3){% endif %}; background: rgba(30,41,59,0.5);">
+              <span class="ideal-label">K1</span>
+              <span style="font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:{% if minsoc_at >= 30 %}#10b981{% else %}#f59e0b{% endif %};">
+                {{ minsoc_at }}% ({{ t_at }}°C)
+              </span>
+            </div>
+            <!-- KIT 2 -->
+            <div class="ideal-box" style="border: 1px solid {% if minsoc_es >= 30 %}rgba(16,185,129,0.3){% else %}rgba(245,158,11,0.3){% endif %}; background: rgba(30,41,59,0.5);">
+              <span class="ideal-label">K2</span>
+              <span style="font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:{% if minsoc_es >= 30 %}#10b981{% else %}#f59e0b{% endif %};">
+                {{ minsoc_es }}% ({{ t_es }}°C)
+              </span>
+            </div>
+            <!-- KIT 3 -->
+            <div class="ideal-box" style="border: 1px solid {% if minsoc_ou >= 30 %}rgba(16,185,129,0.3){% else %}rgba(245,158,11,0.3){% endif %}; background: rgba(30,41,59,0.5);">
+              <span class="ideal-label">K3</span>
+              <span style="font-family:'Space Mono',monospace; font-size:12px; font-weight:700; color:{% if minsoc_ou >= 30 %}#10b981{% else %}#f59e0b{% endif %};">
+                {{ minsoc_ou }}% ({{ t_ou }}°C)
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- BOITE INVISIBLE / CLIGNOTANTE -->
+        <div class="winter-alert-container">
+          {% if froid_detecte and config_vulnerable %}
+            <div class="winter-alert-danger" style="width: 100%;">❄️ FROID DÉTECTÉ<br/>⚠️ MONTEZ LE SOC À 30%</div>
+          {% elif froid_detecte and not config_vulnerable %}
+            <div class="winter-alert-safe" style="width: 100%;">❄️ MODE HIVER<br/>✅ SÉCURISÉ</div>
+          {% endif %}
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- --- SECTION 2 : CADRES DE CONTROLES SÉPARÉS --- -->
+    <div class="controls-wrapper">
+      
+      <!-- COLONNE GAUCHE : COMMANDES GLOBALES -->
+      <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+        
+        <!-- SOUS-CADRE A1 : PILOTAGE & RÉSEAU (VIOLET) -->
+        <div class="control-box box-pilotage" style="flex: 1;">
+          <div class="control-title title-pilotage">⚙ PILOTAGE & RÉSEAU :</div>
+          <div class="btn-group">
+            <div class="control-badge {{ 'active' if mode_reseau == 'on' else 'inactive' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_boolean.mode_zensdk_zendure' } }));">
+              <span class="ideal-label">RÉSEAU</span>
+              <span class="ideal-val" style="color: {{ '#10b981' if mode_reseau == 'on' else '#ef4444' }};">{{ 'zenSDK' if mode_reseau == 'on' else 'CLOUD' }}</span>
+            </div>
+
+            <div class="control-badge {{ 'active' if mode_export == 'on' else 'inactive' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_boolean.export_solaire_zendure' } }));">
+              <span class="ideal-label">EXPORT</span>
+              <span class="ideal-val" style="color: {{ '#10b981' if mode_export == 'on' else '#ef4444' }};">{{ 'AUTORISÉ' if mode_export == 'on' else 'BLOQUÉ' }}</span>
+            </div>
+            
+            <div class="control-badge {{ 'active' if etat_pilotage == 'on' else 'inactive' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_boolean.pilotage_ha_zendure' } }));">
+              <span class="ideal-label">PILOTAGE HA</span>
+              <span class="ideal-val" style="color: {{ '#10b981' if etat_pilotage == 'on' else '#ef4444' }};">{{ 'ON' if etat_pilotage == 'on' else 'OFF' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOUS-CADRE A2 : DOUBLE ZONE (LIMITE INJ. + PRÉVISION MÉTÉO) -->
+        <div style="display: flex; gap: 16px; flex: 1; flex-wrap: wrap;">
+          
+          <!-- GAUCHE : LIMITE D'INJECTION (FUCHSIA) -->
+          <div class="control-box box-limite" style="flex: 1; padding: 14px; min-width: 120px;">
+            <div class="control-title title-limite" style="font-size: 11px; justify-content: center; margin-bottom: 8px;">🎯 LIMITE INJ.</div>
+            <div class="control-badge limit" style="justify-content: center;" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_number.limite_injection_max_ha' } }));">
+              <span class="ideal-val" style="color: #d946ef; font-size: 14px;">{{ limite_ha }} W</span>
+            </div>
+          </div>
+
+          <!-- DROITE : MÉTÉO PRÉVUE (ORANGE) -->
+          <div class="control-box" style="flex: 1; border: 1px dashed #f59e0b; padding: 14px; min-width: 120px;">
+            <div class="control-title" style="color: #f59e0b; font-size: 11px; justify-content: center; margin-bottom: 8px;">☀️ DEMAIN</div>
+            <div class="control-badge" style="background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; justify-content: center;" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.prevision_solaire_demain_total' } }));">
+              <span class="ideal-val" style="color: #fcd34d; font-size: 14px;">{{ prev_demain }} kWh</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- COLONNE DROITE : MAINTENANCE ET SOC -->
+      <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
+        
+        <!-- NOUVEAU CADRE SCINDÉ : CALIBRAGE + DECOMPTE -->
+        <div class="control-box box-calibrage" style="flex: 1; display: flex; flex-direction: row; flex-wrap: wrap; gap: 15px;">
+          
+          <!-- PARTIE GAUCHE : BOUTONS D'ARMEMENT -->
+          <div style="flex: 1; min-width: 160px; display: flex; flex-direction: column; gap: 15px;">
+            <div class="control-title title-calibrage">🔧 CALIBRAGE :</div>
+            <div class="btn-group">
+              <div class="control-badge {% if calib_at == 'on' %}active{% elif arme_at == 'on' %}pending{% else %}inactive{% endif %}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: '{% if calib_at == "on" %}input_boolean.calibrage_lfp_kit_1{% else %}input_boolean.armement_calibrage_kit_1{% endif %}' } }));">
+                <span class="ideal-label">K1</span>
+                <span class="ideal-val" style="color: {% if calib_at == 'on' %}#10b981{% elif arme_at == 'on' %}#f59e0b{% else %}#ef4444{% endif %}; font-size: 11px;">
+                  {% if calib_at == 'on' %}EN COURS{% elif arme_at == 'on' %}ARMÉ ⏳{% else %}OFF{% endif %}
+                </span>
+              </div>
+              <div class="control-badge {% if calib_es == 'on' %}active{% elif arme_es == 'on' %}pending{% else %}inactive{% endif %}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: '{% if calib_es == "on" %}input_boolean.calibrage_lfp_kit_2{% else %}input_boolean.armement_calibrage_kit_2{% endif %}' } }));">
+                <span class="ideal-label">K2</span>
+                <span class="ideal-val" style="color: {% if calib_es == 'on' %}#10b981{% elif arme_es == 'on' %}#f59e0b{% else %}#ef4444{% endif %}; font-size: 11px;">
+                  {% if calib_es == 'on' %}EN COURS{% elif arme_es == 'on' %}ARMÉ ⏳{% else %}OFF{% endif %}
+                </span>
+              </div>
+              <div class="control-badge {% if calib_ou == 'on' %}active{% elif arme_ou == 'on' %}pending{% else %}inactive{% endif %}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: '{% if calib_ou == "on" %}input_boolean.calibrage_lfp_kit_3{% else %}input_boolean.armement_calibrage_kit_3{% endif %}' } }));">
+                <span class="ideal-label">K3</span>
+                <span class="ideal-val" style="color: {% if calib_ou == 'on' %}#10b981{% elif arme_ou == 'on' %}#f59e0b{% else %}#ef4444{% endif %}; font-size: 11px;">
+                  {% if calib_ou == 'on' %}EN COURS{% elif arme_ou == 'on' %}ARMÉ ⏳{% else %}OFF{% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SÉPARATEUR VERTICAL -->
+          <div style="width: 1px; background: #1e293b; align-self: stretch; min-height: 40px;"></div>
+
+          <!-- PARTIE DROITE : TÉLÉMÉTRIE DÉCOMPTE -->
+          <div style="flex: 1; min-width: 120px; display: flex; flex-direction: column; justify-content: center; gap: 8px;">
+            <div class="control-title" style="color: #94a3b8; font-size: 10px;">📅 SANTÉ CYCLE :</div>
+            
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <!-- LIGNE KIT 1 -->
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 10px; color: #64748b; font-weight: 800;">KIT 1</span>
+                <span class="age-badge {% if dec_at > 10 %}age-safe{% elif dec_at >= 0 %}age-warn{% else %}age-alert{% endif %}">
+                  J{% if dec_at >= 0 %}-{{ dec_at }}{% else %}+{{ dec_at | abs }} ⚠️{% endif %}
+                </span>
+              </div>
+              <!-- LIGNE KIT 2 -->
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 10px; color: #64748b; font-weight: 800;">KIT 2</span>
+                <span class="age-badge {% if dec_es > 10 %}age-safe{% elif dec_es >= 0 %}age-warn{% else %}age-alert{% endif %}">
+                  J{% if dec_es >= 0 %}-{{ dec_es }}{% else %}+{{ dec_es | abs }} ⚠️{% endif %}
+                </span>
+              </div>
+              <!-- LIGNE KIT 3 -->
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 10px; color: #64748b; font-weight: 800;">KIT 3</span>
+                <span class="age-badge {% if dec_ou > 10 %}age-safe{% elif dec_ou >= 0 %}age-warn{% else %}age-alert{% endif %}">
+                  J{% if dec_ou >= 0 %}-{{ dec_ou }}{% else %}+{{ dec_ou | abs }} ⚠️{% endif %}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SOUS-CADRE B2 : CIBLE SOC MIN. DIFFÉRÉ (BLEU CIEL) -->
+        <div class="control-box box-minsoc" style="flex: 1;">
+          <div class="control-title title-minsoc">🔋 CIBLE SOC MIN. :</div>
+          <div class="btn-group">
+            <div class="control-badge minsoc" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_number.target_min_soc_kit_1' } }));">
+              <span class="ideal-label">KIT 1</span>
+              <span class="ideal-val" style="color: #38bdf8;">
+                {% if cible_min_soc_at != minsoc_at %}⏳ {{ cible_min_soc_at }}%{% else %}{{ minsoc_at }}%{% endif %}
+              </span>
+            </div>
+
+            <div class="control-badge minsoc" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_number.target_min_soc_kit_2' } }));">
+              <span class="ideal-label">KIT 2</span>
+              <span class="ideal-val" style="color: #38bdf8;">
+                {% if cible_min_soc_es != minsoc_es %}⏳ {{ cible_min_soc_es }}%{% else %}{{ minsoc_es }}%{% endif %}
+              </span>
+            </div>
+
+            <div class="control-badge minsoc" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'input_number.target_min_soc_kit_3' } }));">
+              <span class="ideal-label">KIT 3</span>
+              <span class="ideal-val" style="color: #38bdf8;">
+                {% if cible_min_soc_ou != minsoc_ou %}⏳ {{ cible_min_soc_ou }}%{% else %}{{ minsoc_ou }}%{% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      
+    </div>
+
+    <!-- --- CADRE 3 : COMPTEURS DES RELAIS --- -->
+    <div class="relay-row">
+      <div class="relay-header">🔄 Compteurs des relais</div>
+      <div class="relay-content">
+        <div class="relay-group">
+          <div class="relay-title">Kit 1</div>
+          <div class="ideal-box"><span class="ideal-label">MODE AC</span><span class="relay-val" style="color:#f59e0b;">{{ rel_at_ac }}</span></div>
+          <div class="ideal-box"><span class="ideal-label">EXPORT</span><span class="relay-val" style="color:#f59e0b;">{{ rel_at_gr }}</span></div>
+        </div>
+        <div class="relay-group">
+          <div class="relay-title">Kit 2</div>
+          <div class="ideal-box"><span class="ideal-label">MODE AC</span><span class="relay-val" style="color:#f59e0b;">{{ rel_es_ac }}</span></div>
+          <div class="ideal-box"><span class="ideal-label">EXPORT</span><span class="relay-val" style="color:#f59e0b;">{{ rel_es_gr }}</span></div>
+        </div>
+        <div class="relay-group">
+          <div class="relay-title">Kit 3</div>
+          <div class="ideal-box"><span class="ideal-label">MODE AC</span><span class="relay-val" style="color:#f59e0b;">{{ rel_ou_ac }}</span></div>
+          <div class="ideal-box"><span class="ideal-label">EXPORT</span><span class="relay-val" style="color:#f59e0b;">{{ rel_ou_gr }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULES KITS -->
+    <div class="kits-grid">
+      {{ kit_module('Kit 1', pv1_at, pv2_at, p_at_tot, h_at, b_at, soc_at, t_at, rem_at) }}
+      {{ kit_module('Kit 2', pv1_es, pv2_es, p_es_tot, h_es, b_es, soc_es, t_es, rem_es) }}
+      {{ kit_module('Kit 3', pv1_ou, pv2_ou, p_ou_tot, h_ou, b_ou, soc_ou, t_ou, rem_ou) }}
+    </div>
+
+    <!-- LIGNE 3 BLOCS : SOLAIRE -> MAISON <-> ENEDIS -->
+    <div class="tie-row">
+      
+      <!-- BLOC 1 : TOTAL SOLAIRE -->
+      <div class="tie-node" style="--c: #f59e0b;">
+        <div class="tie-icon">☀️</div>
+        <div class="tie-title">Solaire Total</div>
+        <div class="tie-val">{{ total_solar | round(0) }} <span style="font-size:14px">W</span></div>
+      </div>
+      
+      <!-- TRACK 1 : SOLAIRE VERS MAISON -->
+      <div class="flux-container">
+        <svg width="100%" height="100%" class="desktop-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+          <path d="M 0 5 L 100 5" class="track-bg" vector-effect="non-scaling-stroke" />
+          {% if total_solar > 0 %}
+            <path d="M 0 5 L 100 5" class="flow-active" style="--c:#f59e0b;" vector-effect="non-scaling-stroke" />
+          {% endif %}
+        </svg>
+        <svg width="100%" height="100%" class="mobile-svg" viewBox="0 0 10 100" preserveAspectRatio="none">
+          <path d="M 5 0 L 5 100" class="track-bg" vector-effect="non-scaling-stroke" />
+          {% if total_solar > 0 %}
+            <path d="M 5 0 L 5 100" class="flow-active" style="--c:#f59e0b;" vector-effect="non-scaling-stroke" />
+          {% endif %}
+        </svg>
+      </div>
+
+      <!-- CONTENEUR CENTRAL : MAISON + ÉPONGE -->
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 180px; z-index: 2;">
+        
+        <!-- BLOC 2A : HABITATION NETTE -->
+        <div class="tie-node" style="--c: #38bdf8; max-width: 100%;">
+          <div class="tie-icon">🏠</div>
+          <div class="tie-title">Maison Nette</div>
+          <div class="tie-val">{{ p_house_net | round(0) }} <span style="font-size:14px">W</span></div>
+        </div>
+
+        <!-- BLOC 2B : CHARGE CROISÉE (S'affiche avec ses Watts en transit) -->
+        <div class="tie-node-sub" style="--c: #a855f7;">
+          <div class="tie-sub-title">🧽 SURPLUS DEPUIS : {{ source_eponge }}</div>
+          <div class="tie-sub-val">{{ p_eponge | round(0) }} <span style="font-size:12px">W</span></div>
+        </div>
+
+      </div>
+      
+      <!-- TRACK 2 : MAISON VERS ENEDIS -->
+      <div class="flux-container">
+        <svg width="100%" height="100%" class="desktop-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+          <path d="M 0 5 L 100 5" class="track-bg" vector-effect="non-scaling-stroke" />
+          {% if is_exporting %}
+            <path d="M 0 5 L 100 5" class="flow-active" style="--c:#10b981;" vector-effect="non-scaling-stroke" />
+          {% elif p_grid > 2 %}
+            <path d="M 100 5 L 0 5" class="flow-active" style="--c:#ef4444;" vector-effect="non-scaling-stroke" />
+          {% endif %}
+        </svg>
+        <svg width="100%" height="100%" class="mobile-svg" viewBox="0 0 10 100" preserveAspectRatio="none">
+          <path d="M 5 0 L 5 100" class="track-bg" vector-effect="non-scaling-stroke" />
+          {% if is_exporting %}
+            <path d="M 5 0 L 5 100" class="flow-active" style="--c:#10b981;" vector-effect="non-scaling-stroke" />
+          {% elif p_grid > 2 %}
+            <path d="M 5 100 L 5 0" class="flow-active" style="--c:#ef4444;" vector-effect="non-scaling-stroke" />
+          {% endif %}
+        </svg>
+      </div>
+
+      <!-- BLOC 3 : RÉSEAU ENEDIS -->
+      <div class="tie-node" style="--c: {{ grid_color }};">
+        <div class="tie-icon">🗼</div>
+        <div class="tie-title">{% if is_exporting %}Surplus Exporté{% else %}Soutirage Réseau{% endif %}</div>
+        <div class="tie-val">{{ p_grid_abs | round(0) }} <span style="font-size:14px">W</span></div>
+        <div style="font-size:10px; color:#64748b; margin-top:8px;">COMPTEUR RÉSEAU</div>
+      </div>
+
+    </div>
+
+    <!-- --- CADRE NOUVEAU : GROS CONSOMMATEURS --- -->
+    <div class="heavy-row">
+      <div class="heavy-header">🔥 Gros Consommateurs (Dérogation Hiver)</div>
+      <div class="heavy-grid">
+        
+        <div class="heavy-item {{ 'active' if pwr_four > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.four_power' } }));">
+          <div class="heavy-icon">🍳</div>
+          <div class="heavy-name">Four</div>
+          <div class="heavy-val {{ 'active' if pwr_four > 30 else '' }}">{{ pwr_four | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_air_fryer > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.airfryer_power' } }));">
+          <div class="heavy-icon">🍟</div>
+          <div class="heavy-name">Air Fryer</div>
+          <div class="heavy-val {{ 'active' if pwr_air_fryer > 30 else '' }}">{{ pwr_air_fryer | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_lv > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.lave_vaisselle_power' } }));">
+          <div class="heavy-icon">🍽️</div>
+          <div class="heavy-name">Lave-Vaiss.</div>
+          <div class="heavy-val {{ 'active' if pwr_lv > 30 else '' }}">{{ pwr_lv | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_ml > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.machine_a_laver_power' } }));">
+          <div class="heavy-icon">👕</div>
+          <div class="heavy-name">Mach. Laver</div>
+          <div class="heavy-val {{ 'active' if pwr_ml > 30 else '' }}">{{ pwr_ml | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_comp > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.compresseur_power' } }));">
+          <div class="heavy-icon">💨</div>
+          <div class="heavy-name">Compress.</div>
+          <div class="heavy-val {{ 'active' if pwr_comp > 30 else '' }}">{{ pwr_comp | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_rad_j > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.chauffage_chambre_1_power' } }));">
+          <div class="heavy-icon">🌡️</div>
+          <div class="heavy-name">Rad. Enf. 1</div>
+          <div class="heavy-val {{ 'active' if pwr_rad_j > 30 else '' }}">{{ pwr_rad_j | round(0) }} W</div>
+        </div>
+        
+        <div class="heavy-item {{ 'active' if pwr_rad_m > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.chauffage_chambre_2_power' } }));">
+          <div class="heavy-icon">🌡️</div>
+          <div class="heavy-name">Rad. Enf. 2</div>
+          <div class="heavy-val {{ 'active' if pwr_rad_m > 30 else '' }}">{{ pwr_rad_m | round(0) }} W</div>
+        </div>
+
+        <div class="heavy-item {{ 'active' if pwr_mo > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.micro_onde_power' } }));">
+          <div class="heavy-icon">♨️</div>
+          <div class="heavy-name">Micro-Onde</div>
+          <div class="heavy-val {{ 'active' if pwr_mo > 30 else '' }}">{{ pwr_mo | round(0) }} W</div>
+        </div>
+
+        <div class="heavy-item {{ 'active' if pwr_clim > 30 else '' }}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: 'sensor.clim_power' } }));">
+          <div class="heavy-icon">❄️</div>
+          <div class="heavy-name">Climatisation</div>
+          <div class="heavy-val {{ 'active' if pwr_clim > 30 else '' }}">{{ pwr_clim | round(0) }} W</div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- METRIQUES GLOBALES DU COMPTEUR -->
+    <div class="metrics-grid">
+      <div class="metric-card" style="--theme: #38bdf8;">
+        <div class="mc-title">Tension L1</div>
+        <div><span class="mc-val">{{ states('sensor.main_power_meter_voltage') }}</span><span class="mc-unit">V</span></div>
+      </div>
+      <div class="metric-card" style="--theme: #f59e0b;">
+        <div class="mc-title">Intensité L1</div>
+        <div><span class="mc-val">{{ states('sensor.main_power_meter_current') }}</span><span class="mc-unit">A</span></div>
+      </div>
+      <div class="metric-card" style="--theme: #a855f7;">
+        <div class="mc-title">Cos Phi</div>
+        <div><span class="mc-val">{{ states('sensor.main_power_meter_pf') }}</span></div>
+      </div>
+      <div class="metric-card" style="--theme: #10b981;">
+        <div class="mc-title">Conso Hier (Compteur)</div>
+        <div><span class="mc-val">{{ conso_hier | round(2) }}</span><span class="mc-unit">kWh</span></div>
+      </div>
+      <div class="metric-card" style="--theme: #ef4444;">
+        <div class="mc-title">Coût Aujourd'hui</div>
+        <div><span class="mc-val">{{ cout_jour_dynamique | round(2) }}</span><span class="mc-unit">€</span></div>
+      </div>
+      <div class="metric-card" style="--theme: #64748b;">
+        <div class="mc-title">Coût Hier</div>
+        <div><span class="mc-val">{{ cout_hier | round(2) }}</span><span class="mc-unit">€</span></div>
+      </div>
+    </div>
+  </div>
+cards: []
+title: Production Solaire
+icon: mdi:solar-power
+show_icon_and_title: true
