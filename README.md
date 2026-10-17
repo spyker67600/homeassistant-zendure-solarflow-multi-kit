@@ -1,5 +1,7 @@
 # Aegis Zendure Ecosystem — Multi-Kit SolarFlow (Home Assistant)
 
+<a href="https://buymeacoffee.com/spyker67600" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 Architecture de pilotage local avancée pour réguler **3 kits Zendure SolarFlow** en parallèle sur Home Assistant.
 
 Ce projet résout les limitations d'origine des installations multi-hubs : élimination du soutirage réseau parasite, suppression de l'usure prématurée des relais mécaniques (*anti-flapping*), équilibrage dynamique de charge (*vases communicants*) et supervision industrielle complète.
