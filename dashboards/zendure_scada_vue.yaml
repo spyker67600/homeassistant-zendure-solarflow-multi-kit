@@ -556,7 +556,7 @@ views:
                 <div class="control-title title-calibrage">🔧 CALIBRAGE :</div>
                 <div class="btn-group">
                   <div class="control-badge {% if calib_at == 'on' %}active{% elif arme_at == 'on' %}pending{% else %}inactive{% endif %}" onclick="this.dispatchEvent(new CustomEvent('hass-more-info', { bubbles: true, composed: true, detail: { entityId: '{% if calib_at == "on" %}input_boolean.zendure_calibrage_kit1{% else %}input_boolean.zendure_armement_calibrage_kit1{% endif %}' } }));">
-                    <span class="ideal-label">ATEL.</span>
+                    <span class="ideal-label">KIT 1</span>
                     <span class="ideal-val" style="color: {% if calib_at == 'on' %}#10b981{% elif arme_at == 'on' %}#f59e0b{% else %}#ef4444{% endif %}; font-size: 11px;">
                       {% if calib_at == 'on' %}EN COURS{% elif arme_at == 'on' %}ARMÉ ⏳{% else %}OFF{% endif %}
                     </span>
