@@ -1,57 +1,80 @@
-# Aegis Zendure Ecosystem — Multi-Kit SolarFlow (Home Assistant)
+# Zendure Multi-Kit — régulation zéro export pour Home Assistant
 
-<a href="https://buymeacoffee.com/spyker67600" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://buymeacoffee.com/spyker67600" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50"></a>
 
-Architecture de pilotage local avancée pour réguler **3 kits Zendure SolarFlow** en parallèle sur Home Assistant.
+Pilote **2 ou 3 kits Zendure SolarFlow** comme une seule installation, **100 % en local (MQTT), sans cloud**.
+Le but : consommer ton solaire et tes batteries chez toi, sans rien offrir au réseau, et sans user les relais.
 
-Ce projet résout les limitations d'origine des installations multi-hubs : élimination du soutirage réseau parasite, suppression de l'usure prématurée des relais mécaniques (*anti-flapping*), équilibrage dynamique de charge (*vases communicants*) et supervision industrielle complète.
-
----
-
-## 🌟 Fonctionnalités clés
-
-* **Moteur de pilotage haute fréquence (Core Engine) :** Régulation temps réel sous 1 seconde avec filtre anti-spam MQTT (seuil d'intervention $\ge 20\text{ W}$) pour préserver les onduleurs.
-* **Algorithme des Vases Communicants :** Mutualisation logicielle des 3 batteries physiques en un parc unique. Répartition dynamique selon l'ensoleillement et l'état de charge (SOC) de chaque kit.
-* **Coussin dynamique anti-siphon :** Offset mathématique sur la mesure réseau pour garantir une injection zéro sans soutirage involontaire sur le réseau public.
-* **Filet de sécurité & Chien de garde (Watchdogs) :** Bascule automatique sur un talon de survie (50 W par kit) en cas de défaillance du capteur principal, réveil local automatique des hubs après redémarrage et protection contre la décharge profonde sous 6 %.
-* **Gestion hivernale & Dérogation consommateurs :** Déduction instantanée de la puissance des appareils énergivores ciblés (four, lave-vaisselle, radiateurs) pour éviter de vider les réserves de batterie. Alerte météo anti-gel proactive.
-* **SOC minimum différé :** Application de la réserve matérielle uniquement quand le soleil a chargé la batterie, évitant les recharges forcées payantes sur le réseau Enedis.
-* **Maintenance LFP automatisée :** Cycles programmables de calibrage à 100 % puis décharge lente à 12 % pour réaligner les BMS, avec déclenchement nocturne en heures creuses.
-* **Tableaux de bord dédiés (SCADA & Netrunner HUD) :** 
-  * Synoptique animé en SVG avec flux en temps réel, alertes gel et commandes manuelles.
-  * HUD financier avec calcul dynamique du retour sur investissement (ROI) et date d'amortissement prévisionnelle.
+> 🇬🇧 **English summary** at the bottom of this page.
 
 ---
 
-## 📦 Architecture du projet
+## Ce que ça fait
 
-Le projet est découpé en modules autonomes et progressifs :
-
-| Lot | Désignation | Description |
-| :--- | :--- | :--- |
-| **Lot 1** | Cœur & Vases Communicants | Automate principal, capteurs virtuels de consigne et arbitrage du kit maître. |
-| **Lot 2** | Sécurités & Watchdogs | Repli en cas de coupure de communication, filet sous 6 % et réveil d'urgence. |
-| **Lot 3** | Énergie & Hivernage | Dérogation gros consommateurs, SOC différé et alerte gel. |
-| **Lot 4** | Maintenance LFP | Automatisation du calibrage complet des batteries et planification nocturne. |
-| **Lot 5** | Utilitaires & Matériel | Bascule ZenSDK / Cloud et régulation thermique active des hubs. |
-| **Lot 6** | Interfaces (Dashboards) | Cartes Lovelace SCADA temps réel et HUD d'amortissement. |
-
----
-
-## 🛠️ Prérequis
-
-1. **Home Assistant** (version récente avec prise en charge des templates Jinja2 modernes).
-2. **Intégration Zendure** : accès local privilégié via **zenSDK** ou passerelle MQTT locale.
-3. **Mesure de puissance générale** : capteur réseau principal (ex. Shelly EM / 3EM ou tore Linky) avec rafraîchissement rapide (< 2 s).
-4. **Composants d'interface (via HACS)** :
-   * `custom:html-template-card`
-   * `custom:apexcharts-card`
+| Fonction | En clair |
+|---|---|
+| **Zéro export** | Lit ton compteur au point de livraison et ajuste la sortie des kits pour que la maison consomme exactement ce qui est produit. |
+| **Solaire direct d'abord** | Le solaire part vers la maison avant de passer par la batterie (moins de pertes). |
+| **Partage intelligent des batteries** | Le manque est réparti entre les kits selon leur réserve au-dessus du Min SOC (pondération au carré) : la batterie la plus pleine travaille le plus, aucune ne fait du micro-cyclage. |
+| **Kit maître** | Le kit qui produit le plus couvre la maison en premier ; changement seulement avec 100 W d'écart (pas de va-et-vient). |
+| **Bypass batterie pleine** | Batterie pleine : le kit passe son solaire en direct. Hystérésis réglable (99 / 95 % par défaut) contre les claquements de relais. |
+| **Renfort réseau** | Quand un kit est en bypass et qu'il reste du surplus, les autres kits s'en servent pour se charger. |
+| **Mode hiver** | Les gros consommateurs (four, lave-linge, radiateurs…) ne vident pas la batterie : ils restent sur le réseau. |
+| **Jour gris** | Par faible soleil, une marge de SOC plus grande évite de vider la batterie pour quelques watts. |
+| **Min SOC différé** | Le Min SOC n'est envoyé au boîtier qu'une fois atteint, pour ne jamais déclencher une recharge réseau payante. |
+| **Calibrage LFP automatique** | Tous les N jours, charge jusqu'au **vrai** plein (tension des cellules, pas la jauge) puis décharge lente, pour recaler la jauge du BMS. Départ calculé pour finir avant le lever du soleil. |
+| **Contrôle de plausibilité des jauges** | Détecte une jauge BMS qui ment (saut sans charge, jauge contredite par la tension des cellules). Le kit est alors **exclu de la décharge** jusqu'au prochain vrai plein. |
+| **Sécurités** | Filet sous 6 % (recharge réseau jusqu'à 10 %), chien de garde du compteur (kits bridés à 50 W s'il tombe), exclusion automatique d'un kit muet + alerte. |
+| **Tout se règle sans code** | 13 réglages dans le tableau de bord, avec des bornes qui empêchent les combinaisons dangereuses. |
 
 ---
 
-## 🚀 Mise en œuvre
+## Prérequis
 
-1. **Création des Helpers :** Créer les `input_boolean`, `input_number` et `counter` requis dans l'interface de Home Assistant (liste détaillée dans `packages/zendure_helpers.yaml`).
-2. **Déploiement des Capteurs Virtuels :** Intégrer les templates de calcul de consigne dans votre configuration YAML.
-3. **Import des Automatisations :** Importer les scripts de pilotage et les sécurités.
-4. **Intégration des Vues :** Créer un tableau de bord en mode panneau (*panel*) et y coller les cartes Lovelace fournies.
+- **Home Assistant 2025.10 ou plus récent.**
+- **2 ou 3 kits Zendure SolarFlow** remontés **en MQTT local** dans Home Assistant (entités `electricLevel`, `outputLimit`, `inputLimit`, `acMode`, `minSoc`, et les tensions de cellules `maxVol` / `minVol` / `batCur`).
+- **Un compteur de puissance au point de livraison** (Shelly EM / Pro EM, Linky + ZLinky, etc.). Positif quand tu consommes sur le réseau.
+
+> Testé en production sur 3 kits SolarFlow 800+ avec batteries AB2000. Le fonctionnement à **2 kits** est prévu (le 3e est simplement ignoré) mais n'a pas encore été testé en conditions réelles : retours bienvenus.
+
+---
+
+## Installation (résumé)
+
+1. **Renommer** chaque appareil Zendure en `Zendure Kit1`, `Zendure Kit2`, `Zendure Kit3` et accepter le renommage des entités.
+   Renommer aussi les 3 capteurs de cellules de chaque kit en `…_pack_maxvol`, `…_pack_minvol`, `…_pack_batcur`.
+2. Copier `packages/zendure_multikit.yaml` dans `config/packages/` et `custom_templates/zendure_multikit.jinja` dans `config/custom_templates/`.
+3. Adapter les **3 lignes marquées ⚠️ À ADAPTER** dans le package : ton compteur, tes gros consommateurs, ton téléphone (facultatif).
+4. Redémarrer Home Assistant, ajouter la vue du tableau de bord, régler tes **Min SOC**, puis activer **Zendure Pilotage actif**.
+
+👉 Pas à pas détaillé, avec captures des noms attendus : **[docs/INSTALLATION.md](docs/INSTALLATION.md)**
+👉 Comment ça marche et à quoi sert chaque réglage : **[docs/FONCTIONNEMENT.md](docs/FONCTIONNEMENT.md)**
+
+---
+
+## Contenu du dépôt
+
+```
+packages/zendure_multikit.yaml          tout le système : helpers, capteurs, automatisations
+custom_templates/zendure_multikit.jinja calcul des consignes (commun aux 3 kits)
+dashboards/zendure_multikit_vue.yaml    vue prête à coller (cartes natives HA, rien à installer)
+docs/                                   installation, fonctionnement, dépannage
+```
+
+---
+
+## Sécurité
+
+La régulation ne contourne **aucune** protection du boîtier Zendure : le Min SOC est aussi écrit dans le hub, qui le respecte même si Home Assistant s'arrête, et le BMS garde ses propres limites.
+Si Home Assistant plante, les kits gardent leur dernière consigne : au pire un peu d'export ou de soutirage, jamais de risque matériel.
+
+**Utilisation à tes risques.** Vérifie que l'injection est autorisée dans ton pays et chez ton gestionnaire de réseau.
+
+---
+
+## 🇬🇧 English summary
+
+Home Assistant package that runs **2–3 Zendure SolarFlow kits** as one system, **fully local over MQTT (no cloud)**, aiming at **zero grid export**.
+Solar goes to the house first; the remaining need is shared between batteries weighted by their usable charge (squared), with a "master" kit, full-battery bypass with hysteresis, winter mode that keeps heavy appliances on the grid, deferred min-SOC, automatic **LFP calibration** that detects a real full charge from **cell voltage**, a **BMS gauge plausibility check** that excludes a lying gauge from discharging, and several safety nets (low-SOC rescue, grid-meter watchdog, silent-kit alert).
+All thresholds are adjustable from the dashboard. Requires Home Assistant 2025.10+, local MQTT entities for the kits, and a grid power meter.
+Install: rename the Zendure devices to `Zendure Kit1/2/3`, drop the package and the Jinja file in place, edit the three `⚠️ À ADAPTER` lines, restart. Docs are in French; questions in English are welcome in the issues.

@@ -1,0 +1,1889 @@
+# =============================================================================
+#  ZENDURE MULTI-KIT — Régulation zéro export pour 2 à 3 kits Zendure SolarFlow
+#  Pilotage 100 % local (MQTT), sans cloud.
+#  https://github.com/spyker67600/homeassistant-zendure-solarflow-multi-kit
+#
+#  INSTALLATION : voir docs/INSTALLATION.md. En résumé :
+#   1. Renommer les appareils Zendure en « Zendure Kit1 / Kit2 / Kit3 »
+#      (et les 3 capteurs de cellules en ..._pack_maxvol / _minvol / _batcur).
+#   2. Copier ce fichier dans config/packages/ et zendure_multikit.jinja dans
+#      config/custom_templates/.
+#   3. Adapter les 3 lignes marquées ⚠️ À ADAPTER (compteur réseau,
+#      gros consommateurs, téléphone pour les notifications).
+#   4. Redémarrer Home Assistant, puis activer « Zendure Pilotage actif ».
+#
+#  Fichier généré — version 2.0.0
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Interrupteurs
+# -----------------------------------------------------------------------------
+input_boolean:
+  zendure_pilotage_actif:
+    name: Zendure Pilotage actif
+    icon: mdi:robot
+  zendure_mode_hiver:
+    name: Zendure Mode hiver
+    icon: mdi:snowflake
+  zendure_calibrage_auto:
+    name: Zendure Calibrage automatique
+    icon: mdi:calendar-sync
+  zendure_init_ok:
+    name: Zendure Valeurs par défaut appliquées
+    icon: mdi:check-decagram
+  zendure_bypass_kit1:
+    name: Zendure Bypass Kit 1
+    icon: mdi:battery-arrow-up
+  zendure_charge_urgence_kit1:
+    name: Zendure Charge urgence Kit 1
+    icon: mdi:battery-alert
+  zendure_armement_calibrage_kit1:
+    name: Zendure Armement calibrage Kit 1
+    icon: mdi:timer-cog
+  zendure_calibrage_kit1:
+    name: Zendure Calibrage en cours Kit 1
+    icon: mdi:battery-sync
+  zendure_jauge_suspecte_kit1:
+    name: Zendure Jauge suspecte Kit 1
+    icon: mdi:battery-unknown
+  zendure_bypass_kit2:
+    name: Zendure Bypass Kit 2
+    icon: mdi:battery-arrow-up
+  zendure_charge_urgence_kit2:
+    name: Zendure Charge urgence Kit 2
+    icon: mdi:battery-alert
+  zendure_armement_calibrage_kit2:
+    name: Zendure Armement calibrage Kit 2
+    icon: mdi:timer-cog
+  zendure_calibrage_kit2:
+    name: Zendure Calibrage en cours Kit 2
+    icon: mdi:battery-sync
+  zendure_jauge_suspecte_kit2:
+    name: Zendure Jauge suspecte Kit 2
+    icon: mdi:battery-unknown
+  zendure_bypass_kit3:
+    name: Zendure Bypass Kit 3
+    icon: mdi:battery-arrow-up
+  zendure_charge_urgence_kit3:
+    name: Zendure Charge urgence Kit 3
+    icon: mdi:battery-alert
+  zendure_armement_calibrage_kit3:
+    name: Zendure Armement calibrage Kit 3
+    icon: mdi:timer-cog
+  zendure_calibrage_kit3:
+    name: Zendure Calibrage en cours Kit 3
+    icon: mdi:battery-sync
+  zendure_jauge_suspecte_kit3:
+    name: Zendure Jauge suspecte Kit 3
+    icon: mdi:battery-unknown
+
+# -----------------------------------------------------------------------------
+# Réglages et paramètres
+# -----------------------------------------------------------------------------
+input_number:
+  zendure_limite_injection_max:
+    name: Zendure Limite injection totale
+    min: 0
+    max: 2400
+    step: 50
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:transmission-tower-export
+  zendure_intervalle_calibrage:
+    name: Zendure Intervalle calibrage
+    min: 7
+    max: 90
+    step: 1
+    unit_of_measurement: j
+    mode: box
+    icon: mdi:calendar-refresh
+  zendure_reglage_coussin_normal:
+    name: Zendure réglage Coussin
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_coussin_charge_reseau:
+    name: Zendure réglage Coussin charge réseau
+    min: 0
+    max: 200
+    step: 1
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_tampon_bypass:
+    name: Zendure réglage Tampon bypass
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_marge_anti_nuage:
+    name: Zendure réglage Marge anti-nuage
+    min: 0
+    max: 500
+    step: 5
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_marge_soc:
+    name: Zendure réglage Marge SOC
+    min: 0
+    max: 30
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_marge_soc_jour_gris:
+    name: Zendure réglage Marge SOC jour gris
+    min: 0
+    max: 30
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_seuil_gros_conso:
+    name: Zendure réglage Seuil gros consommateur
+    min: 0
+    max: 500
+    step: 5
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_seuil_ordre:
+    name: Zendure réglage Écart mini avant ordre
+    min: 5
+    max: 100
+    step: 1
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_bypass_on:
+    name: Zendure réglage Bypass ON
+    min: 96
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_bypass_off:
+    name: Zendure réglage Bypass OFF
+    min: 85
+    max: 95
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_calibrage_charge:
+    name: Zendure réglage Calibrage puissance charge
+    min: 100
+    max: 1200
+    step: 50
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_calibrage_decharge:
+    name: Zendure réglage Calibrage puissance décharge
+    min: 50
+    max: 800
+    step: 10
+    unit_of_measurement: W
+    mode: box
+    icon: mdi:tune-variant
+  zendure_reglage_calibrage_fin:
+    name: Zendure réglage Calibrage fin de décharge
+    min: 5
+    max: 30
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:tune-variant
+  zendure_cible_min_soc_kit1:
+    name: Zendure Min SOC Kit 1
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:battery-low
+  zendure_memoire_min_soc_calibrage_kit1:
+    name: Zendure Mémoire min SOC calibrage Kit 1
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:content-save
+  zendure_capacite_kit1:
+    name: Zendure Capacité batterie Kit 1
+    min: 500
+    max: 20000
+    step: 10
+    unit_of_measurement: Wh
+    mode: box
+    icon: mdi:battery-high
+  zendure_cible_min_soc_kit2:
+    name: Zendure Min SOC Kit 2
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:battery-low
+  zendure_memoire_min_soc_calibrage_kit2:
+    name: Zendure Mémoire min SOC calibrage Kit 2
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:content-save
+  zendure_capacite_kit2:
+    name: Zendure Capacité batterie Kit 2
+    min: 500
+    max: 20000
+    step: 10
+    unit_of_measurement: Wh
+    mode: box
+    icon: mdi:battery-high
+  zendure_cible_min_soc_kit3:
+    name: Zendure Min SOC Kit 3
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:battery-low
+  zendure_memoire_min_soc_calibrage_kit3:
+    name: Zendure Mémoire min SOC calibrage Kit 3
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: '%'
+    mode: box
+    icon: mdi:content-save
+  zendure_capacite_kit3:
+    name: Zendure Capacité batterie Kit 3
+    min: 500
+    max: 20000
+    step: 10
+    unit_of_measurement: Wh
+    mode: box
+    icon: mdi:battery-high
+
+# -----------------------------------------------------------------------------
+# Kit maître solaire
+# -----------------------------------------------------------------------------
+input_select:
+  zendure_kit_maitre:
+    name: Zendure Kit maître solaire
+    options:
+    - kit1
+    - kit2
+    - kit3
+    icon: mdi:crown
+
+# -----------------------------------------------------------------------------
+# Motif de jauge suspecte
+# -----------------------------------------------------------------------------
+input_text:
+  zendure_jauge_motif_kit1:
+    name: Zendure Motif jauge Kit 1
+    max: 120
+    icon: mdi:text
+  zendure_jauge_motif_kit2:
+    name: Zendure Motif jauge Kit 2
+    max: 120
+    icon: mdi:text
+  zendure_jauge_motif_kit3:
+    name: Zendure Motif jauge Kit 3
+    max: 120
+    icon: mdi:text
+
+# -----------------------------------------------------------------------------
+# Dates de calibrage
+# -----------------------------------------------------------------------------
+input_datetime:
+  zendure_dernier_calibrage_kit1:
+    name: Zendure Dernier calibrage Kit 1
+    has_date: true
+    has_time: false
+    icon: mdi:calendar-check
+  zendure_dernier_calibrage_kit2:
+    name: Zendure Dernier calibrage Kit 2
+    has_date: true
+    has_time: false
+    icon: mdi:calendar-check
+  zendure_dernier_calibrage_kit3:
+    name: Zendure Dernier calibrage Kit 3
+    has_date: true
+    has_time: false
+    icon: mdi:calendar-check
+
+# -----------------------------------------------------------------------------
+# Compteurs de commutations relais
+# -----------------------------------------------------------------------------
+counter:
+  zendure_commutations_kit1_ac_mode:
+    name: Zendure Commutations mode AC Kit 1
+    icon: mdi:electric-switch
+    restore: true
+  zendure_commutations_kit1_grid_reverse:
+    name: Zendure Commutations export Kit 1
+    icon: mdi:electric-switch
+    restore: true
+  zendure_commutations_kit2_ac_mode:
+    name: Zendure Commutations mode AC Kit 2
+    icon: mdi:electric-switch
+    restore: true
+  zendure_commutations_kit2_grid_reverse:
+    name: Zendure Commutations export Kit 2
+    icon: mdi:electric-switch
+    restore: true
+  zendure_commutations_kit3_ac_mode:
+    name: Zendure Commutations mode AC Kit 3
+    icon: mdi:electric-switch
+    restore: true
+  zendure_commutations_kit3_grid_reverse:
+    name: Zendure Commutations export Kit 3
+    icon: mdi:electric-switch
+    restore: true
+
+# -----------------------------------------------------------------------------
+# Capteurs calculés (⚠️ 2 capteurs à adapter en tête de liste)
+# -----------------------------------------------------------------------------
+template:
+- sensor:
+  - name: Zendure Compteur réseau
+    unique_id: zendure_mk_compteur_reseau
+    default_entity_id: sensor.zendure_compteur_reseau
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {#- ⚠️ À ADAPTER : ton compteur de puissance au point de livraison.
+          Positif = tu consommes sur le réseau, négatif = tu exportes. -#}
+      {%- set compteur = 'sensor.MON_COMPTEUR_RESEAU_PUISSANCE' -%}
+      {{ states(compteur) | float(0) }}
+    availability: |
+      {%- set compteur = 'sensor.MON_COMPTEUR_RESEAU_PUISSANCE' -%}
+      {{ is_number(states(compteur)) }}
+  - name: Zendure Déduction hiver
+    unique_id: zendure_mk_deduction_hiver
+    default_entity_id: sensor.zendure_deduction_hiver
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {#- ⚠️ À ADAPTER : les gros consommateurs que la batterie ne doit PAS alimenter
+          en mode hiver (four, plaques, lave-linge, radiateurs...). Liste vide = rien. -#}
+      {%- set appareils = [
+        'sensor.EXEMPLE_four_puissance',
+        'sensor.EXEMPLE_lave_linge_puissance',
+      ] -%}
+      {%- set seuil = states('input_number.zendure_reglage_seuil_gros_conso') | float(30) -%}
+      {%- set ns = namespace(total=0) -%}
+      {%- for e in appareils -%}
+        {%- set p = states(e) | float(0) -%}
+        {%- if p > seuil -%}{%- set ns.total = ns.total + p -%}{%- endif -%}
+      {%- endfor -%}
+      {{ ns.total | round(0) }}
+  - name: Zendure Solaire total
+    unique_id: zendure_mk_solaire_total
+    default_entity_id: sensor.zendure_solaire_total
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {{ (states('sensor.zendure_kit1_solarinputpower') | float(0)) + (states('sensor.zendure_kit2_solarinputpower') | float(0)) + (states('sensor.zendure_kit3_solarinputpower') | float(0)) }}
+  - name: Zendure Consigne idéale Kit 1
+    unique_id: zendure_mk_consigne_kit1
+    default_entity_id: sensor.zendure_consigne_ideale_kit1
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {% from 'zendure_multikit.jinja' import consigne_zendure %}
+      {{ consigne_zendure('kit1') | float(0) | int }}
+  - name: Zendure Heure calibrage Kit 1
+    unique_id: zendure_mk_heure_calibrage_kit1
+    default_entity_id: sensor.zendure_heure_calibrage_kit1
+    icon: mdi:clock-start
+    state: |
+      {#- Heure de départ pour finir charge + décharge avant le lever du soleil -#}
+      {%- set soc = states('sensor.zendure_kit1_electriclevel') | float(100) -%}
+      {%- set cap = states('input_number.zendure_capacite_kit1') | float(1920) -%}
+      {%- set p_ch = states('input_number.zendure_reglage_calibrage_charge') | float(800) -%}
+      {%- set p_dech = states('input_number.zendure_reglage_calibrage_decharge') | float(250) -%}
+      {%- set fin = states('input_number.zendure_reglage_calibrage_fin') | float(13) -%}
+      {%- set t = cap * (100 - soc) / 100 / p_ch * 3600 + cap * (100 - fin) / 100 / p_dech * 3600 + 1800 -%}
+      {%- set lever = as_timestamp(state_attr('sun.sun', 'next_rising'), 0) -%}
+      {{ (lever - t) | timestamp_custom('%H:%M') if lever > 0 else '00:00' }}
+  - name: Zendure Décompte calibrage Kit 1
+    unique_id: zendure_mk_decompte_calibrage_kit1
+    default_entity_id: sensor.zendure_decompte_calibrage_kit1
+    unit_of_measurement: j
+    icon: mdi:calendar-clock
+    state: |
+      {%- set intervalle = states('input_number.zendure_intervalle_calibrage') | int(35) -%}
+      {%- set ts = as_timestamp(states('input_datetime.zendure_dernier_calibrage_kit1'), 0) -%}
+      {{ (intervalle - ((as_timestamp(now()) - ts) / 86400) | int) if ts > 0 else 0 }}
+  - name: Zendure Consigne idéale Kit 2
+    unique_id: zendure_mk_consigne_kit2
+    default_entity_id: sensor.zendure_consigne_ideale_kit2
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {% from 'zendure_multikit.jinja' import consigne_zendure %}
+      {{ consigne_zendure('kit2') | float(0) | int }}
+  - name: Zendure Heure calibrage Kit 2
+    unique_id: zendure_mk_heure_calibrage_kit2
+    default_entity_id: sensor.zendure_heure_calibrage_kit2
+    icon: mdi:clock-start
+    state: |
+      {#- Heure de départ pour finir charge + décharge avant le lever du soleil -#}
+      {%- set soc = states('sensor.zendure_kit2_electriclevel') | float(100) -%}
+      {%- set cap = states('input_number.zendure_capacite_kit2') | float(1920) -%}
+      {%- set p_ch = states('input_number.zendure_reglage_calibrage_charge') | float(800) -%}
+      {%- set p_dech = states('input_number.zendure_reglage_calibrage_decharge') | float(250) -%}
+      {%- set fin = states('input_number.zendure_reglage_calibrage_fin') | float(13) -%}
+      {%- set t = cap * (100 - soc) / 100 / p_ch * 3600 + cap * (100 - fin) / 100 / p_dech * 3600 + 1800 -%}
+      {%- set lever = as_timestamp(state_attr('sun.sun', 'next_rising'), 0) -%}
+      {{ (lever - t) | timestamp_custom('%H:%M') if lever > 0 else '00:00' }}
+  - name: Zendure Décompte calibrage Kit 2
+    unique_id: zendure_mk_decompte_calibrage_kit2
+    default_entity_id: sensor.zendure_decompte_calibrage_kit2
+    unit_of_measurement: j
+    icon: mdi:calendar-clock
+    state: |
+      {%- set intervalle = states('input_number.zendure_intervalle_calibrage') | int(35) -%}
+      {%- set ts = as_timestamp(states('input_datetime.zendure_dernier_calibrage_kit2'), 0) -%}
+      {{ (intervalle - ((as_timestamp(now()) - ts) / 86400) | int) if ts > 0 else 0 }}
+  - name: Zendure Consigne idéale Kit 3
+    unique_id: zendure_mk_consigne_kit3
+    default_entity_id: sensor.zendure_consigne_ideale_kit3
+    unit_of_measurement: W
+    device_class: power
+    state_class: measurement
+    state: |
+      {% from 'zendure_multikit.jinja' import consigne_zendure %}
+      {{ consigne_zendure('kit3') | float(0) | int }}
+  - name: Zendure Heure calibrage Kit 3
+    unique_id: zendure_mk_heure_calibrage_kit3
+    default_entity_id: sensor.zendure_heure_calibrage_kit3
+    icon: mdi:clock-start
+    state: |
+      {#- Heure de départ pour finir charge + décharge avant le lever du soleil -#}
+      {%- set soc = states('sensor.zendure_kit3_electriclevel') | float(100) -%}
+      {%- set cap = states('input_number.zendure_capacite_kit3') | float(1920) -%}
+      {%- set p_ch = states('input_number.zendure_reglage_calibrage_charge') | float(800) -%}
+      {%- set p_dech = states('input_number.zendure_reglage_calibrage_decharge') | float(250) -%}
+      {%- set fin = states('input_number.zendure_reglage_calibrage_fin') | float(13) -%}
+      {%- set t = cap * (100 - soc) / 100 / p_ch * 3600 + cap * (100 - fin) / 100 / p_dech * 3600 + 1800 -%}
+      {%- set lever = as_timestamp(state_attr('sun.sun', 'next_rising'), 0) -%}
+      {{ (lever - t) | timestamp_custom('%H:%M') if lever > 0 else '00:00' }}
+  - name: Zendure Décompte calibrage Kit 3
+    unique_id: zendure_mk_decompte_calibrage_kit3
+    default_entity_id: sensor.zendure_decompte_calibrage_kit3
+    unit_of_measurement: j
+    icon: mdi:calendar-clock
+    state: |
+      {%- set intervalle = states('input_number.zendure_intervalle_calibrage') | int(35) -%}
+      {%- set ts = as_timestamp(states('input_datetime.zendure_dernier_calibrage_kit3'), 0) -%}
+      {{ (intervalle - ((as_timestamp(now()) - ts) / 86400) | int) if ts > 0 else 0 }}
+
+# -----------------------------------------------------------------------------
+# Notification (⚠️ à adapter)
+# -----------------------------------------------------------------------------
+script:
+  zendure_notifier:
+    alias: Zendure - Notifier
+    description: "Point unique de notification du package : notification dans HA, et sur ton téléphone si tu l'indiques ci-dessous."
+    mode: queued
+    max: 20
+    icon: mdi:bell-ring
+    fields:
+      titre:
+        description: Titre
+      message:
+        description: Message
+      notification_id:
+        description: Identifiant (pour remplacer/effacer)
+    variables:
+      telephone: |
+        {#- ⚠️ À ADAPTER (facultatif) : ton service de notification téléphone,
+            ex. 'notify.mobile_app_mon_telephone'. Laisser '' = notification HA seulement. -#}
+        {{ '' }}
+    sequence:
+    - action: persistent_notification.create
+      data:
+        title: '{{ titre }}'
+        message: '{{ message }}'
+        notification_id: "{{ notification_id | default('zendure') }}"
+    - if:
+      - condition: template
+        value_template: "{{ telephone | trim != '' }}"
+      then:
+      - action: '{{ telephone | trim }}'
+        continue_on_error: true
+        data:
+          title: '{{ titre }}'
+          message: '{{ message }}'
+
+# -----------------------------------------------------------------------------
+# Automatisations
+# -----------------------------------------------------------------------------
+automation:
+- id: zendure_mk_pilotage_global
+  alias: Zendure - Pilotage global
+  description: "Cœur de la régulation. Applique les consignes idéales (sensor.zendure_consigne_ideale_kitN) aux kits, gère la recharge réseau en renfort quand un kit est en bypass, et ignore les kits en calibrage, en charge d'urgence ou muets. N'envoie un ordre que si l'écart dépasse le réglage « Écart mini avant ordre »."
+  mode: single
+  max_exceeded: silent
+  triggers:
+  - trigger: state
+    entity_id: sensor.zendure_compteur_reseau
+  - trigger: state
+    entity_id: sensor.zendure_solaire_total
+  - trigger: time_pattern
+    minutes: /5
+  conditions:
+  - condition: state
+    entity_id: input_boolean.zendure_pilotage_actif
+    state: 'on'
+  actions:
+  - variables:
+      reseau: "{{ states('sensor.zendure_compteur_reseau') | float(0) }}"
+      urg_kit1: "{{ is_state('input_boolean.zendure_charge_urgence_kit1', 'on') or is_state('input_boolean.zendure_calibrage_kit1', 'on') or states('sensor.zendure_kit1_electriclevel') in ['unavailable', 'unknown'] }}"
+      urg_kit2: "{{ is_state('input_boolean.zendure_charge_urgence_kit2', 'on') or is_state('input_boolean.zendure_calibrage_kit2', 'on') or states('sensor.zendure_kit2_electriclevel') in ['unavailable', 'unknown'] }}"
+      urg_kit3: "{{ is_state('input_boolean.zendure_charge_urgence_kit3', 'on') or is_state('input_boolean.zendure_calibrage_kit3', 'on') or states('sensor.zendure_kit3_electriclevel') in ['unavailable', 'unknown'] }}"
+      pv_kit1: "{{ states('sensor.zendure_kit1_solarinputpower') | float(0) if not urg_kit1 else 0 }}"
+      pv_kit2: "{{ states('sensor.zendure_kit2_solarinputpower') | float(0) if not urg_kit2 else 0 }}"
+      pv_kit3: "{{ states('sensor.zendure_kit3_solarinputpower') | float(0) if not urg_kit3 else 0 }}"
+      ac_kit1: "{{ states('sensor.zendure_kit1_gridinputpower') | float(0) if not urg_kit1 else 0 }}"
+      ac_kit2: "{{ states('sensor.zendure_kit2_gridinputpower') | float(0) if not urg_kit2 else 0 }}"
+      ac_kit3: "{{ states('sensor.zendure_kit3_gridinputpower') | float(0) if not urg_kit3 else 0 }}"
+      ac_total: '{{ ac_kit1 + ac_kit2 + ac_kit3 }}'
+      surplus_brut: '{{ (ac_total - reseau + 20) | round(0) if ac_total > 0 else (ac_total - reseau - 15) | round(0) }}'
+      surplus_net: '{{ surplus_brut if surplus_brut > 0 else 0 }}'
+      soc_kit1: "{{ states('sensor.zendure_kit1_electriclevel') | float(0) if not urg_kit1 else 0 }}"
+      soc_kit2: "{{ states('sensor.zendure_kit2_electriclevel') | float(0) if not urg_kit2 else 0 }}"
+      soc_kit3: "{{ states('sensor.zendure_kit3_electriclevel') | float(0) if not urg_kit3 else 0 }}"
+      ideal_kit1: "{{ states('sensor.zendure_consigne_ideale_kit1') | float(0) }}"
+      ideal_kit2: "{{ states('sensor.zendure_consigne_ideale_kit2') | float(0) }}"
+      ideal_kit3: "{{ states('sensor.zendure_consigne_ideale_kit3') | float(0) }}"
+      solaire_total: "{{ states('sensor.zendure_solaire_total') | float(0) }}"
+      besoin_total: '{{ ideal_kit1 + ideal_kit2 + ideal_kit3 }}'
+      avail_ideal: '{{ (ideal_kit1 if not urg_kit1 else 0) + (ideal_kit2 if not urg_kit2 else 0) + (ideal_kit3 if not urg_kit3 else 0) }}'
+      forced_kit1: "{{ states('number.zendure_kit1_outputlimit') | float(0) if urg_kit1 and states('number.zendure_kit1_outputlimit') not in ['unavailable', 'unknown'] else 0 }}"
+      forced_kit2: "{{ states('number.zendure_kit2_outputlimit') | float(0) if urg_kit2 and states('number.zendure_kit2_outputlimit') not in ['unavailable', 'unknown'] else 0 }}"
+      forced_kit3: "{{ states('number.zendure_kit3_outputlimit') | float(0) if urg_kit3 and states('number.zendure_kit3_outputlimit') not in ['unavailable', 'unknown'] else 0 }}"
+      rem_need: '{{ besoin_total - (forced_kit1 + forced_kit2 + forced_kit3) }}'
+      is_cal: '{{ urg_kit1 or urg_kit2 or urg_kit3 }}'
+      inj_kit1: '{% if not is_cal %}{{ ideal_kit1 }}{% elif urg_kit1 %}{{ ideal_kit1 }}{% elif avail_ideal > 0 and rem_need > 0 %}{{ ((ideal_kit1 / avail_ideal) * rem_need) | round(0) }}{% else %}0{% endif %}'
+      inj_kit2: '{% if not is_cal %}{{ ideal_kit2 }}{% elif urg_kit2 %}{{ ideal_kit2 }}{% elif avail_ideal > 0 and rem_need > 0 %}{{ ((ideal_kit2 / avail_ideal) * rem_need) | round(0) }}{% else %}0{% endif %}'
+      inj_kit3: '{% if not is_cal %}{{ ideal_kit3 }}{% elif urg_kit3 %}{{ ideal_kit3 }}{% elif avail_ideal > 0 and rem_need > 0 %}{{ ((ideal_kit3 / avail_ideal) * rem_need) | round(0) }}{% else %}0{% endif %}'
+      cible_kit1: "{{ states('input_number.zendure_cible_min_soc_kit1') | float(10) }}"
+      cible_kit2: "{{ states('input_number.zendure_cible_min_soc_kit2') | float(10) }}"
+      cible_kit3: "{{ states('input_number.zendure_cible_min_soc_kit3') | float(10) }}"
+      safe_kit1: '{{ 0 if soc_kit1 <= (cible_kit1 + 1) else ([inj_kit1, pv_kit1, 800] | min if ac_total > 0 else [inj_kit1, 800] | min) }}'
+      safe_kit2: '{{ 0 if soc_kit2 <= (cible_kit2 + 1) else ([inj_kit2, pv_kit2, 800] | min if ac_total > 0 else [inj_kit2, 800] | min) }}'
+      safe_kit3: '{{ 0 if soc_kit3 <= (cible_kit3 + 1) else ([inj_kit3, pv_kit3, 800] | min if ac_total > 0 else [inj_kit3, 800] | min) }}'
+      bypass_actif: "{{ is_state('input_boolean.zendure_bypass_kit1', 'on') or is_state('input_boolean.zendure_bypass_kit2', 'on') or is_state('input_boolean.zendure_bypass_kit3', 'on') }}"
+      list_socs: "{% set ns = namespace(l=[]) %}{% if soc_kit1 < 98 and not is_state('input_boolean.zendure_bypass_kit1', 'on') and not urg_kit1 %}{% set ns.l = ns.l + [soc_kit1] %}{% endif %}{% if soc_kit2 < 98 and not is_state('input_boolean.zendure_bypass_kit2', 'on') and not urg_kit2 %}{% set ns.l = ns.l + [soc_kit2] %}{% endif %}{% if soc_kit3 < 98 and not is_state('input_boolean.zendure_bypass_kit3', 'on') and not urg_kit3 %}{% set ns.l = ns.l + [soc_kit3] %}{% endif %}{{ ns.l }}"
+      min_soc: '{{ list_socs | min if list_socs | length > 0 else 100 }}'
+      cibles_count: "{{ list_socs | select('<=', min_soc + 1) | list | length }}"
+      part_ac: '{{ [(surplus_net / cibles_count) | round(0), 800] | min if cibles_count > 0 else 0 }}'
+      ac_cible_kit1: '{% set seuil = 50 if ac_kit1 > 0 else 120 %}{{ part_ac if bypass_actif and part_ac > seuil and soc_kit1 <= (min_soc + 1) and not urg_kit1 else 0 }}'
+      ac_cible_kit2: '{% set seuil = 50 if ac_kit2 > 0 else 120 %}{{ part_ac if bypass_actif and part_ac > seuil and soc_kit2 <= (min_soc + 1) and not urg_kit2 else 0 }}'
+      ac_cible_kit3: '{% set seuil = 50 if ac_kit3 > 0 else 120 %}{{ part_ac if bypass_actif and part_ac > seuil and soc_kit3 <= (min_soc + 1) and not urg_kit3 else 0 }}'
+      out_kit1: "{{ states('number.zendure_kit1_outputlimit') | float(0) }}"
+      out_kit2: "{{ states('number.zendure_kit2_outputlimit') | float(0) }}"
+      out_kit3: "{{ states('number.zendure_kit3_outputlimit') | float(0) }}"
+      total_out_actuel: '{{ out_kit1 + out_kit2 + out_kit3 }}'
+      total_out_cible: '{{ safe_kit1 + safe_kit2 + safe_kit3 }}'
+      total_ac_cible: '{{ ac_cible_kit1 + ac_cible_kit2 + ac_cible_kit3 }}'
+      delta_global: '{{ (safe_kit1 - out_kit1) | abs + (safe_kit2 - out_kit2) | abs + (safe_kit3 - out_kit3) | abs + (ac_cible_kit1 - ac_kit1) | abs + (ac_cible_kit2 - ac_kit2) | abs + (ac_cible_kit3 - ac_kit3) | abs }}'
+  - condition: template
+    value_template: |
+      {{ delta_global >= (states('input_number.zendure_reglage_seuil_ordre') | float(20))
+         or is_cal
+         or (total_out_cible == 0 and total_out_actuel > 0)
+         or (total_ac_cible == 0 and ac_total > 0) }}
+  - parallel:
+    - alias: Piloter kit1
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ not urg_kit1 }}'
+        then:
+        - if:
+          - condition: template
+            value_template: '{{ ac_cible_kit1 > 0 }}'
+          then:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit1_outputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit1_outputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit1_acmode') != 'Input mode' }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit1_acmode
+              data:
+                option: Input mode
+          - if:
+            - condition: template
+              value_template: "{{ (states('number.zendure_kit1_inputlimit') | float(0) - ac_cible_kit1) | abs >= 15 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit1_inputlimit
+              data:
+                value: '{{ ac_cible_kit1 }}'
+          else:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit1_inputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit1_inputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit1_acmode') == 'Input mode' and safe_kit1 > 0 and not (bypass_actif and solaire_total >= besoin_total) }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit1_acmode
+              data:
+                option: Output mode
+          - if:
+            - condition: template
+              value_template: "{{ (safe_kit1 == 0 and states('number.zendure_kit1_outputlimit') | float(0) > 0) or ((safe_kit1 - states('number.zendure_kit1_outputlimit') | float(0)) | abs >= 15) }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit1_outputlimit
+              data:
+                value: '{{ safe_kit1 }}'
+    - alias: Piloter kit2
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ not urg_kit2 }}'
+        then:
+        - if:
+          - condition: template
+            value_template: '{{ ac_cible_kit2 > 0 }}'
+          then:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit2_outputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit2_outputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit2_acmode') != 'Input mode' }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit2_acmode
+              data:
+                option: Input mode
+          - if:
+            - condition: template
+              value_template: "{{ (states('number.zendure_kit2_inputlimit') | float(0) - ac_cible_kit2) | abs >= 15 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit2_inputlimit
+              data:
+                value: '{{ ac_cible_kit2 }}'
+          else:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit2_inputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit2_inputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit2_acmode') == 'Input mode' and safe_kit2 > 0 and not (bypass_actif and solaire_total >= besoin_total) }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit2_acmode
+              data:
+                option: Output mode
+          - if:
+            - condition: template
+              value_template: "{{ (safe_kit2 == 0 and states('number.zendure_kit2_outputlimit') | float(0) > 0) or ((safe_kit2 - states('number.zendure_kit2_outputlimit') | float(0)) | abs >= 15) }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit2_outputlimit
+              data:
+                value: '{{ safe_kit2 }}'
+    - alias: Piloter kit3
+      sequence:
+      - if:
+        - condition: template
+          value_template: '{{ not urg_kit3 }}'
+        then:
+        - if:
+          - condition: template
+            value_template: '{{ ac_cible_kit3 > 0 }}'
+          then:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit3_outputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit3_outputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit3_acmode') != 'Input mode' }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit3_acmode
+              data:
+                option: Input mode
+          - if:
+            - condition: template
+              value_template: "{{ (states('number.zendure_kit3_inputlimit') | float(0) - ac_cible_kit3) | abs >= 15 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit3_inputlimit
+              data:
+                value: '{{ ac_cible_kit3 }}'
+          else:
+          - if:
+            - condition: template
+              value_template: "{{ states('number.zendure_kit3_inputlimit') | float(0) != 0 }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit3_inputlimit
+              data:
+                value: 0
+          - if:
+            - condition: template
+              value_template: "{{ states('select.zendure_kit3_acmode') == 'Input mode' and safe_kit3 > 0 and not (bypass_actif and solaire_total >= besoin_total) }}"
+            then:
+            - action: select.select_option
+              continue_on_error: true
+              target:
+                entity_id: select.zendure_kit3_acmode
+              data:
+                option: Output mode
+          - if:
+            - condition: template
+              value_template: "{{ (safe_kit3 == 0 and states('number.zendure_kit3_outputlimit') | float(0) > 0) or ((safe_kit3 - states('number.zendure_kit3_outputlimit') | float(0)) | abs >= 15) }}"
+            then:
+            - action: number.set_value
+              continue_on_error: true
+              target:
+                entity_id: number.zendure_kit3_outputlimit
+              data:
+                value: '{{ safe_kit3 }}'
+  - delay:
+      seconds: 1
+- id: zendure_mk_bypass
+  alias: Zendure - Hystérésis bypass
+  description: 'Batterie pleine (seuil ON) : le kit passe en bypass. Libéré sous le seuil OFF. Évite les claquements de relais.'
+  mode: queued
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_electriclevel
+    above: input_number.zendure_reglage_bypass_on
+    id: on_kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_electriclevel
+    below: input_number.zendure_reglage_bypass_off
+    id: off_kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_electriclevel
+    above: input_number.zendure_reglage_bypass_on
+    id: on_kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_electriclevel
+    below: input_number.zendure_reglage_bypass_off
+    id: off_kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_electriclevel
+    above: input_number.zendure_reglage_bypass_on
+    id: on_kit3
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_electriclevel
+    below: input_number.zendure_reglage_bypass_off
+    id: off_kit3
+  actions:
+  - if:
+    - condition: template
+      value_template: "{{ trigger.id.startswith('on_') }}"
+    then:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: "input_boolean.zendure_bypass_{{ trigger.id.split('_')[1] }}"
+    else:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: "input_boolean.zendure_bypass_{{ trigger.id.split('_')[1] }}"
+- id: zendure_mk_arbitre_maitre
+  alias: Zendure - Arbitre kit maître solaire
+  description: "Le kit qui produit le plus devient maître, seulement s'il dépasse l'actuel de 100 W (hystérésis)."
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.zendure_kit1_solarinputpower
+    - sensor.zendure_kit2_solarinputpower
+    - sensor.zendure_kit3_solarinputpower
+  variables:
+    pvs: "{{ {'kit1': states('sensor.zendure_kit1_solarinputpower') | float(0), 'kit2': states('sensor.zendure_kit2_solarinputpower') | float(0), 'kit3': states('sensor.zendure_kit3_solarinputpower') | float(0)} }}"
+    maitre: "{{ states('input_select.zendure_kit_maitre') }}"
+    meilleur: "{{ (pvs | dictsort(false, 'value') | last)[0] }}"
+  conditions:
+  - condition: template
+    value_template: '{{ meilleur != maitre and (pvs[meilleur] - pvs.get(maitre, 0)) > 100 }}'
+  actions:
+  - action: input_select.select_option
+    target:
+      entity_id: input_select.zendure_kit_maitre
+    data:
+      option: '{{ meilleur }}'
+- id: zendure_mk_filet_securite
+  alias: Zendure - Filet de sécurité (sous 6 %)
+  description: "Un kit passe sous 6 % : recharge réseau à 400 W jusqu'à 10 %. Le Pilotage le laisse faire."
+  mode: parallel
+  max: 3
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_electriclevel
+    below: 6
+    id: kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_electriclevel
+    below: 6
+    id: kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_electriclevel
+    below: 6
+    id: kit3
+  actions:
+  - variables:
+      kit: '{{ trigger.id }}'
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.zendure_charge_urgence_{{ kit }}
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_{{ kit }}_outputlimit
+    data:
+      value: 0
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_{{ kit }}_inputlimit
+    data:
+      value: 400
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_{{ kit }}_acmode
+    data:
+      option: Input mode
+  - wait_template: "{{ states('sensor.zendure_' ~ kit ~ '_electriclevel') | float(0) >= 10 }}"
+    timeout: 02:00:00
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_{{ kit }}_inputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_{{ kit }}_acmode
+    data:
+      option: Output mode
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_charge_urgence_{{ kit }}
+- id: zendure_mk_soc_min_differe
+  alias: Zendure - Min SOC différé
+  description: "Envoie le Min SOC au boîtier seulement quand la batterie l'a atteint, pour ne pas forcer une recharge réseau."
+  mode: queued
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_number.zendure_cible_min_soc_kit1
+    - sensor.zendure_kit1_electriclevel
+    id: kit1
+  - trigger: state
+    entity_id:
+    - input_number.zendure_cible_min_soc_kit2
+    - sensor.zendure_kit2_electriclevel
+    id: kit2
+  - trigger: state
+    entity_id:
+    - input_number.zendure_cible_min_soc_kit3
+    - sensor.zendure_kit3_electriclevel
+    id: kit3
+  actions:
+  - variables:
+      kit: '{{ trigger.id }}'
+      cible: "{{ states('input_number.zendure_cible_min_soc_' ~ trigger.id) | int(0) }}"
+  - condition: template
+    value_template: "{{ is_state('input_boolean.zendure_calibrage_' ~ kit, 'off') }}"
+  - condition: template
+    value_template: "{{ states('sensor.zendure_' ~ kit ~ '_electriclevel') | int(0) >= cible }}"
+  - condition: template
+    value_template: "{{ states('number.zendure_' ~ kit ~ '_minsoc') | int(0) != cible }}"
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_{{ kit }}_minsoc
+    data:
+      value: '{{ cible }}'
+- id: zendure_mk_calibrage_kit1
+  alias: Zendure - Calibrage LFP Kit 1
+  description: "Charge forcée jusqu'au vrai plein (cellule > 3,50 V, ou jauge 99 % + courant faible + cellule ≥ 3,45 V pendant 5 min), puis décharge lente jusqu'au seuil de fin pour recaler la jauge du BMS. Puissances et seuil : réglages « Calibrage ». Sans vrai plein en 10 h, tout est remis en place."
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.zendure_calibrage_kit1
+    to: 'on'
+  actions:
+  - variables:
+      soc_memo: "{{ states('input_number.zendure_cible_min_soc_kit1') | float(20) }}"
+  - alias: Mémoriser le Min SOC (survit à un redémarrage)
+    action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit1
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit1
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit1_minsoc
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit1_outputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit1_acmode
+    data:
+      option: Input mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit1_inputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_charge') | int(800) }}"
+  - alias: Attente du vrai plein (tension cellule, pas la jauge)
+    wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit1_pack_maxvol
+      above: 3.5
+    - trigger: template
+      for: 00:05:00
+      value_template: "{{ states('sensor.zendure_kit1_electriclevel') | float(0) >= 99 and states('sensor.zendure_kit1_outputpackpower') | float(0) < 30 and states('sensor.zendure_kit1_pack_maxvol') | float(0) >= 3.45 }}"
+    timeout: '10:00:00'
+    continue_on_timeout: true
+  - alias: 'Pas de vrai plein en 10 h : on remet tout en place'
+    if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: number.set_value
+      target:
+        entity_id: number.zendure_kit1_inputlimit
+      data:
+        value: 0
+    - action: select.select_option
+      target:
+        entity_id: select.zendure_kit1_acmode
+      data:
+        option: Output mode
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.zendure_cible_min_soc_kit1
+      data:
+        value: '{{ soc_memo }}'
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_calibrage_kit1
+    - action: script.turn_on
+      target:
+        entity_id: script.zendure_notifier
+      data:
+        variables:
+          titre: Calibrage Kit 1 abandonné
+          message: Vrai plein non atteint en 10 h (cellule < 3,50 V). Réglages remis en place.
+          notification_id: calibrage_kit1
+    - stop: Calibrage abandonné
+  - alias: 'Vrai plein atteint : la jauge est recalée, on lève le drapeau suspect'
+    sequence:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_jauge_suspecte_kit1
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.zendure_jauge_motif_kit1
+      data:
+        value: "RAS (calibré le {{ now().strftime('%d/%m %H:%M') }})"
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: jauge_kit1
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit1_inputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit1_acmode
+    data:
+      option: Output mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit1_outputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_decharge') | int(250) }}"
+  - wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit1_electriclevel
+      below: input_number.zendure_reglage_calibrage_fin
+    timeout: '15:00:00'
+    continue_on_timeout: true
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit1
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_calibrage_kit1
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.zendure_dernier_calibrage_kit1
+    data:
+      date: "{{ now().strftime('%Y-%m-%d') }}"
+- id: zendure_mk_calibrage_kit2
+  alias: Zendure - Calibrage LFP Kit 2
+  description: "Charge forcée jusqu'au vrai plein (cellule > 3,50 V, ou jauge 99 % + courant faible + cellule ≥ 3,45 V pendant 5 min), puis décharge lente jusqu'au seuil de fin pour recaler la jauge du BMS. Puissances et seuil : réglages « Calibrage ». Sans vrai plein en 10 h, tout est remis en place."
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.zendure_calibrage_kit2
+    to: 'on'
+  actions:
+  - variables:
+      soc_memo: "{{ states('input_number.zendure_cible_min_soc_kit2') | float(20) }}"
+  - alias: Mémoriser le Min SOC (survit à un redémarrage)
+    action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit2
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit2
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit2_minsoc
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit2_outputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit2_acmode
+    data:
+      option: Input mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit2_inputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_charge') | int(800) }}"
+  - alias: Attente du vrai plein (tension cellule, pas la jauge)
+    wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit2_pack_maxvol
+      above: 3.5
+    - trigger: template
+      for: 00:05:00
+      value_template: "{{ states('sensor.zendure_kit2_electriclevel') | float(0) >= 99 and states('sensor.zendure_kit2_outputpackpower') | float(0) < 30 and states('sensor.zendure_kit2_pack_maxvol') | float(0) >= 3.45 }}"
+    timeout: '10:00:00'
+    continue_on_timeout: true
+  - alias: 'Pas de vrai plein en 10 h : on remet tout en place'
+    if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: number.set_value
+      target:
+        entity_id: number.zendure_kit2_inputlimit
+      data:
+        value: 0
+    - action: select.select_option
+      target:
+        entity_id: select.zendure_kit2_acmode
+      data:
+        option: Output mode
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.zendure_cible_min_soc_kit2
+      data:
+        value: '{{ soc_memo }}'
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_calibrage_kit2
+    - action: script.turn_on
+      target:
+        entity_id: script.zendure_notifier
+      data:
+        variables:
+          titre: Calibrage Kit 2 abandonné
+          message: Vrai plein non atteint en 10 h (cellule < 3,50 V). Réglages remis en place.
+          notification_id: calibrage_kit2
+    - stop: Calibrage abandonné
+  - alias: 'Vrai plein atteint : la jauge est recalée, on lève le drapeau suspect'
+    sequence:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_jauge_suspecte_kit2
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.zendure_jauge_motif_kit2
+      data:
+        value: "RAS (calibré le {{ now().strftime('%d/%m %H:%M') }})"
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: jauge_kit2
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit2_inputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit2_acmode
+    data:
+      option: Output mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit2_outputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_decharge') | int(250) }}"
+  - wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit2_electriclevel
+      below: input_number.zendure_reglage_calibrage_fin
+    timeout: '15:00:00'
+    continue_on_timeout: true
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit2
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_calibrage_kit2
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.zendure_dernier_calibrage_kit2
+    data:
+      date: "{{ now().strftime('%Y-%m-%d') }}"
+- id: zendure_mk_calibrage_kit3
+  alias: Zendure - Calibrage LFP Kit 3
+  description: "Charge forcée jusqu'au vrai plein (cellule > 3,50 V, ou jauge 99 % + courant faible + cellule ≥ 3,45 V pendant 5 min), puis décharge lente jusqu'au seuil de fin pour recaler la jauge du BMS. Puissances et seuil : réglages « Calibrage ». Sans vrai plein en 10 h, tout est remis en place."
+  mode: single
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.zendure_calibrage_kit3
+    to: 'on'
+  actions:
+  - variables:
+      soc_memo: "{{ states('input_number.zendure_cible_min_soc_kit3') | float(20) }}"
+  - alias: Mémoriser le Min SOC (survit à un redémarrage)
+    action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit3
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit3
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit3_minsoc
+    data:
+      value: 10
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit3_outputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit3_acmode
+    data:
+      option: Input mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit3_inputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_charge') | int(800) }}"
+  - alias: Attente du vrai plein (tension cellule, pas la jauge)
+    wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit3_pack_maxvol
+      above: 3.5
+    - trigger: template
+      for: 00:05:00
+      value_template: "{{ states('sensor.zendure_kit3_electriclevel') | float(0) >= 99 and states('sensor.zendure_kit3_outputpackpower') | float(0) < 30 and states('sensor.zendure_kit3_pack_maxvol') | float(0) >= 3.45 }}"
+    timeout: '10:00:00'
+    continue_on_timeout: true
+  - alias: 'Pas de vrai plein en 10 h : on remet tout en place'
+    if:
+    - condition: template
+      value_template: '{{ wait.trigger is none }}'
+    then:
+    - action: number.set_value
+      target:
+        entity_id: number.zendure_kit3_inputlimit
+      data:
+        value: 0
+    - action: select.select_option
+      target:
+        entity_id: select.zendure_kit3_acmode
+      data:
+        option: Output mode
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.zendure_cible_min_soc_kit3
+      data:
+        value: '{{ soc_memo }}'
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_calibrage_kit3
+    - action: script.turn_on
+      target:
+        entity_id: script.zendure_notifier
+      data:
+        variables:
+          titre: Calibrage Kit 3 abandonné
+          message: Vrai plein non atteint en 10 h (cellule < 3,50 V). Réglages remis en place.
+          notification_id: calibrage_kit3
+    - stop: Calibrage abandonné
+  - alias: 'Vrai plein atteint : la jauge est recalée, on lève le drapeau suspect'
+    sequence:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.zendure_jauge_suspecte_kit3
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.zendure_jauge_motif_kit3
+      data:
+        value: "RAS (calibré le {{ now().strftime('%d/%m %H:%M') }})"
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: jauge_kit3
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit3_inputlimit
+    data:
+      value: 0
+  - action: select.select_option
+    target:
+      entity_id: select.zendure_kit3_acmode
+    data:
+      option: Output mode
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_kit3_outputlimit
+    data:
+      value: "{{ states('input_number.zendure_reglage_calibrage_decharge') | int(250) }}"
+  - wait_for_trigger:
+    - trigger: numeric_state
+      entity_id: sensor.zendure_kit3_electriclevel
+      below: input_number.zendure_reglage_calibrage_fin
+    timeout: '15:00:00'
+    continue_on_timeout: true
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit3
+    data:
+      value: '{{ soc_memo }}'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_calibrage_kit3
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.zendure_dernier_calibrage_kit3
+    data:
+      date: "{{ now().strftime('%Y-%m-%d') }}"
+- id: zendure_mk_calibrage_depart
+  alias: Zendure - Départ nocturne du calibrage
+  description: "À l'heure calculée (sensor.zendure_heure_calibrage_kitN), lance le calibrage d'un kit armé."
+  mode: queued
+  triggers:
+  - trigger: template
+    id: kit1
+    value_template: "{{ now().strftime('%H:%M') == states('sensor.zendure_heure_calibrage_kit1') }}"
+  - trigger: template
+    id: kit2
+    value_template: "{{ now().strftime('%H:%M') == states('sensor.zendure_heure_calibrage_kit2') }}"
+  - trigger: template
+    id: kit3
+    value_template: "{{ now().strftime('%H:%M') == states('sensor.zendure_heure_calibrage_kit3') }}"
+  actions:
+  - condition: template
+    value_template: "{{ is_state('input_boolean.zendure_armement_calibrage_' ~ trigger.id, 'on') and is_number(states('sensor.zendure_' ~ trigger.id ~ '_electriclevel')) }}"
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_armement_calibrage_{{ trigger.id }}
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.zendure_calibrage_{{ trigger.id }}
+- id: zendure_mk_calibrage_armement_auto
+  alias: Zendure - Armement automatique du calibrage
+  description: "Si « Calibrage automatique » est activé, arme le calibrage d'un kit quand son décompte arrive à 0."
+  mode: queued
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.zendure_decompte_calibrage_kit1
+    below: 1
+    id: kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_decompte_calibrage_kit2
+    below: 1
+    id: kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_decompte_calibrage_kit3
+    below: 1
+    id: kit3
+  - trigger: time
+    at: '12:00:00'
+    id: midi
+  conditions:
+  - condition: state
+    entity_id: input_boolean.zendure_calibrage_auto
+    state: 'on'
+  actions:
+  - repeat:
+      for_each:
+      - kit1
+      - kit2
+      - kit3
+      sequence:
+      - if:
+        - condition: template
+          value_template: "{{ is_number(states('sensor.zendure_' ~ repeat.item ~ '_electriclevel')) and states('sensor.zendure_decompte_calibrage_' ~ repeat.item) | int(99) <= 0 and is_state('input_boolean.zendure_armement_calibrage_' ~ repeat.item, 'off') and is_state('input_boolean.zendure_calibrage_' ~ repeat.item, 'off') }}"
+        then:
+        - action: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.zendure_armement_calibrage_{{ repeat.item }}
+- id: zendure_mk_calibrage_fin_filet
+  alias: Zendure - Fin de calibrage (filet après redémarrage)
+  description: 'Si HA a redémarré pendant un calibrage, termine proprement quand la jauge passe sous le seuil de fin : remet le Min SOC mémorisé.'
+  mode: queued
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_electriclevel
+    below: input_number.zendure_reglage_calibrage_fin
+    id: kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_electriclevel
+    below: input_number.zendure_reglage_calibrage_fin
+    id: kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_electriclevel
+    below: input_number.zendure_reglage_calibrage_fin
+    id: kit3
+  actions:
+  - condition: template
+    value_template: "{{ is_state('input_boolean.zendure_calibrage_' ~ trigger.id, 'on') }}"
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_{{ trigger.id }}
+    data:
+      value: "{{ states('input_number.zendure_memoire_min_soc_calibrage_' ~ trigger.id) | float(20) }}"
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.zendure_calibrage_{{ trigger.id }}
+  - action: number.set_value
+    target:
+      entity_id: number.zendure_{{ trigger.id }}_outputlimit
+    data:
+      value: 0
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.zendure_dernier_calibrage_{{ trigger.id }}
+    data:
+      date: "{{ now().strftime('%Y-%m-%d') }}"
+- id: zendure_mk_plausibilite_jauges
+  alias: Zendure - Contrôle de plausibilité des jauges
+  description: 'Signale une jauge BMS suspecte : saut de 10 points ou plus sans charge, ou jauge contredite par la tension des cellules au repos (≥ 95 % avec cellule max < 3,34 V, ou ≤ 15 % avec cellule min ≥ 3,28 V pendant 15 min). Un kit suspect est exclu du partage batterie. Se lève tout seul au prochain vrai plein ou vrai vide.'
+  mode: queued
+  max: 10
+  triggers:
+  - trigger: state
+    entity_id: sensor.zendure_kit1_electriclevel
+    id: saut_kit1
+  - trigger: state
+    entity_id: sensor.zendure_kit2_electriclevel
+    id: saut_kit2
+  - trigger: state
+    entity_id: sensor.zendure_kit3_electriclevel
+    id: saut_kit3
+  - trigger: template
+    for: 00:15:00
+    id: haut_kit1
+    value_template: "{{ states('sensor.zendure_kit1_electriclevel') | float(0) >= 95 and states('sensor.zendure_kit1_pack_maxvol') | float(9) < 3.34 and states('sensor.zendure_kit1_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: template
+    for: 00:15:00
+    id: haut_kit2
+    value_template: "{{ states('sensor.zendure_kit2_electriclevel') | float(0) >= 95 and states('sensor.zendure_kit2_pack_maxvol') | float(9) < 3.34 and states('sensor.zendure_kit2_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: template
+    for: 00:15:00
+    id: haut_kit3
+    value_template: "{{ states('sensor.zendure_kit3_electriclevel') | float(0) >= 95 and states('sensor.zendure_kit3_pack_maxvol') | float(9) < 3.34 and states('sensor.zendure_kit3_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: template
+    for: 00:15:00
+    id: bas_kit1
+    value_template: "{{ is_number(states('sensor.zendure_kit1_electriclevel')) and states('sensor.zendure_kit1_electriclevel') | float(100) <= 15 and states('sensor.zendure_kit1_pack_minvol') | float(0) >= 3.28 and states('sensor.zendure_kit1_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: template
+    for: 00:15:00
+    id: bas_kit2
+    value_template: "{{ is_number(states('sensor.zendure_kit2_electriclevel')) and states('sensor.zendure_kit2_electriclevel') | float(100) <= 15 and states('sensor.zendure_kit2_pack_minvol') | float(0) >= 3.28 and states('sensor.zendure_kit2_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: template
+    for: 00:15:00
+    id: bas_kit3
+    value_template: "{{ is_number(states('sensor.zendure_kit3_electriclevel')) and states('sensor.zendure_kit3_electriclevel') | float(100) <= 15 and states('sensor.zendure_kit3_pack_minvol') | float(0) >= 3.28 and states('sensor.zendure_kit3_pack_batcur') | float(99) | abs < 3 }}"
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_pack_maxvol
+    above: 3.5
+    id: rhaut_kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_pack_maxvol
+    above: 3.5
+    id: rhaut_kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_pack_maxvol
+    above: 3.5
+    id: rhaut_kit3
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit1_pack_minvol
+    below: 3
+    id: rbas_kit1
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit2_pack_minvol
+    below: 3
+    id: rbas_kit2
+  - trigger: numeric_state
+    entity_id: sensor.zendure_kit3_pack_minvol
+    below: 3
+    id: rbas_kit3
+  actions:
+  - variables:
+      kit: "{{ trigger.id.split('_')[1] }}"
+      typ: "{{ trigger.id.split('_')[0] }}"
+  - variables:
+      flag: input_boolean.zendure_jauge_suspecte_{{ kit }}
+      motif: input_text.zendure_jauge_motif_{{ kit }}
+      heure: "{{ now().strftime('%d/%m %H:%M') }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ typ == 'saut' and is_number(trigger.from_state.state) and is_number(trigger.to_state.state) and (trigger.to_state.state | float - trigger.from_state.state | float) | abs >= 10 and states('sensor.zendure_' ~ kit ~ '_outputpackpower') | float(0) < 100 }}"
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: '{{ flag }}'
+      - action: input_text.set_value
+        target:
+          entity_id: '{{ motif }}'
+        data:
+          value: Saut {{ trigger.from_state.state | int }} → {{ trigger.to_state.state | int }} % le {{ heure }} sans charge
+      - action: script.turn_on
+        target:
+          entity_id: script.zendure_notifier
+        data:
+          variables:
+            titre: Jauge {{ kit }} suspecte
+            message: "Saut de {{ trigger.from_state.state | int }} à {{ trigger.to_state.state | int }} % sans charge ({{ heure }}). Kit exclu de la décharge jusqu'au prochain vrai plein."
+            notification_id: jauge_{{ kit }}
+    - conditions:
+      - condition: template
+        value_template: "{{ typ in ['haut', 'bas'] }}"
+      sequence:
+      - action: input_boolean.turn_on
+        target:
+          entity_id: '{{ flag }}'
+      - action: input_text.set_value
+        target:
+          entity_id: '{{ motif }}'
+        data:
+          value: "{{ 'Jauge haute mais tension basse' if typ == 'haut' else 'Jauge basse mais tension haute' }} ({{ heure }})"
+      - action: script.turn_on
+        target:
+          entity_id: script.zendure_notifier
+        data:
+          variables:
+            titre: Jauge {{ kit }} suspecte
+            message: "{{ 'Jauge ≥ 95 % alors que les cellules sont sous 3,34 V au repos.' if typ == 'haut' else 'Jauge ≤ 15 % alors que les cellules sont ≥ 3,28 V au repos.' }} ({{ heure }})"
+            notification_id: jauge_{{ kit }}
+    - conditions:
+      - condition: template
+        value_template: "{{ typ in ['rhaut', 'rbas'] and is_state(flag, 'on') }}"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: '{{ flag }}'
+      - action: input_text.set_value
+        target:
+          entity_id: '{{ motif }}'
+        data:
+          value: "Recalée {{ 'par le haut (vrai plein)' if typ == 'rhaut' else 'par le bas (vrai vide)' }} le {{ heure }}"
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: jauge_{{ kit }}
+- id: zendure_mk_alerte_kit_muet
+  alias: Zendure - Alerte kit muet (MQTT)
+  description: "Prévient si un kit ne remonte plus en MQTT depuis 15 min (le Pilotage l'exclut déjà), et quand il revient."
+  mode: queued
+  triggers:
+  - trigger: state
+    entity_id:
+    - sensor.zendure_kit1_electriclevel
+    - sensor.zendure_kit2_electriclevel
+    - sensor.zendure_kit3_electriclevel
+    to:
+    - unavailable
+    - unknown
+    for: 00:15:00
+    id: muet
+  - trigger: state
+    entity_id:
+    - sensor.zendure_kit1_electriclevel
+    - sensor.zendure_kit2_electriclevel
+    - sensor.zendure_kit3_electriclevel
+    from:
+    - unavailable
+    - unknown
+    id: retour
+  actions:
+  - variables:
+      kit: "{{ trigger.entity_id.split('.')[1].split('_')[1] }}"
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: muet
+      sequence:
+      - action: script.turn_on
+        target:
+          entity_id: script.zendure_notifier
+        data:
+          variables:
+            titre: Zendure {{ kit }} muet
+            message: "Plus de remontée MQTT depuis 15 min ({{ now().strftime('%d/%m %H:%M') }}). Kit exclu du pilotage. Vérifier WiFi / hub."
+            notification_id: kit_muet_{{ kit }}
+    - conditions:
+      - condition: trigger
+        id: retour
+      sequence:
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: kit_muet_{{ kit }}
+- id: zendure_mk_chien_de_garde_compteur
+  alias: Zendure - Chien de garde compteur réseau
+  description: 'Compteur réseau indisponible 1 min : Pilotage coupé, kits bridés à 50 W. Relance automatique au retour.'
+  mode: restart
+  triggers:
+  - trigger: state
+    entity_id: sensor.zendure_compteur_reseau
+    to:
+    - unavailable
+    - unknown
+    for: 00:01:00
+    id: perte
+  - trigger: template
+    value_template: "{{ is_number(states('sensor.zendure_compteur_reseau')) }}"
+    for: 00:01:00
+    id: retour
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: perte
+      sequence:
+      - action: automation.turn_off
+        target:
+          entity_id: automation.zendure_pilotage_global
+        data:
+          stop_actions: true
+      - action: number.set_value
+        continue_on_error: true
+        target:
+          entity_id:
+          - number.zendure_kit1_outputlimit
+          - number.zendure_kit2_outputlimit
+          - number.zendure_kit3_outputlimit
+        data:
+          value: 50
+      - action: script.turn_on
+        target:
+          entity_id: script.zendure_notifier
+        data:
+          variables:
+            titre: ⚠️ Sécurité Zendure
+            message: Compteur réseau perdu. Pilotage coupé, kits bridés à 50 W.
+            notification_id: zendure_compteur
+    - conditions:
+      - condition: trigger
+        id: retour
+      sequence:
+      - action: automation.turn_on
+        target:
+          entity_id: automation.zendure_pilotage_global
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: zendure_compteur
+- id: zendure_mk_commutations
+  alias: Zendure - Compteurs de commutations relais
+  description: "Compte les bascules de mode AC et d'export (usure des relais). Remise à zéro à minuit."
+  mode: queued
+  max: 10
+  triggers:
+  - trigger: state
+    entity_id: select.zendure_kit1_acmode
+    id: kit1_ac_mode
+  - trigger: state
+    entity_id: select.zendure_kit2_acmode
+    id: kit2_ac_mode
+  - trigger: state
+    entity_id: select.zendure_kit3_acmode
+    id: kit3_ac_mode
+  - trigger: state
+    entity_id: select.zendure_kit1_gridreverse
+    id: kit1_grid_reverse
+  - trigger: state
+    entity_id: select.zendure_kit2_gridreverse
+    id: kit2_grid_reverse
+  - trigger: state
+    entity_id: select.zendure_kit3_gridreverse
+    id: kit3_grid_reverse
+  - trigger: time
+    at: 00:00:00
+    id: minuit
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: minuit
+      sequence:
+      - action: counter.reset
+        target:
+          entity_id:
+          - counter.zendure_commutations_kit1_ac_mode
+          - counter.zendure_commutations_kit1_grid_reverse
+          - counter.zendure_commutations_kit2_ac_mode
+          - counter.zendure_commutations_kit2_grid_reverse
+          - counter.zendure_commutations_kit3_ac_mode
+          - counter.zendure_commutations_kit3_grid_reverse
+    default:
+    - condition: template
+      value_template: "{{ trigger.from_state is not none and trigger.from_state.state not in ['unavailable', 'unknown'] and trigger.to_state.state not in ['unavailable', 'unknown'] }}"
+    - action: counter.increment
+      target:
+        entity_id: counter.zendure_commutations_{{ trigger.id }}
+- id: zendure_mk_valeurs_defaut
+  alias: Zendure - Valeurs par défaut (1re installation)
+  description: Au tout premier démarrage du package, met chaque réglage à sa valeur conseillée. Ne fait plus rien ensuite.
+  mode: single
+  triggers:
+  - trigger: homeassistant
+    event: start
+  - trigger: event
+    event_type: automation_reloaded
+  conditions:
+  - condition: state
+    entity_id: input_boolean.zendure_init_ok
+    state: 'off'
+  actions:
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_coussin_normal
+    data:
+      value: 7
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_coussin_charge_reseau
+    data:
+      value: 40
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_tampon_bypass
+    data:
+      value: 15
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_marge_anti_nuage
+    data:
+      value: 100
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_marge_soc
+    data:
+      value: 2
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_marge_soc_jour_gris
+    data:
+      value: 10
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_seuil_gros_conso
+    data:
+      value: 30
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_seuil_ordre
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_bypass_on
+    data:
+      value: 99
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_bypass_off
+    data:
+      value: 95
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_calibrage_charge
+    data:
+      value: 800
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_calibrage_decharge
+    data:
+      value: 250
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_reglage_calibrage_fin
+    data:
+      value: 13
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_limite_injection_max
+    data:
+      value: 800
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_intervalle_calibrage
+    data:
+      value: 35
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit1
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit1
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_capacite_kit1
+    data:
+      value: 1920
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit2
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit2
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_capacite_kit2
+    data:
+      value: 1920
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_cible_min_soc_kit3
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_memoire_min_soc_calibrage_kit3
+    data:
+      value: 20
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_capacite_kit3
+    data:
+      value: 1920
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.zendure_init_ok

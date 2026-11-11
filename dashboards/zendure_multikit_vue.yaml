@@ -1,0 +1,227 @@
+# Vue « Zendure Multi-Kit » — cartes natives HA uniquement.
+# Tableau de bord > ⋮ > Modifier > ⋮ > Éditeur de configuration brute : coller sous `views:`.
+views:
+- title: Zendure Multi-Kit
+  path: zendure-multikit
+  icon: mdi:solar-power
+  type: sections
+  max_columns: 4
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Régulation
+      icon: mdi:robot
+    - type: tile
+      entity: input_boolean.zendure_pilotage_actif
+    - type: tile
+      entity: input_boolean.zendure_mode_hiver
+    - type: tile
+      entity: sensor.zendure_compteur_reseau
+    - type: tile
+      entity: sensor.zendure_solaire_total
+    - type: tile
+      entity: input_select.zendure_kit_maitre
+    - type: tile
+      entity: input_number.zendure_limite_injection_max
+    - type: tile
+      entity: sensor.zendure_deduction_hiver
+  - type: grid
+    cards:
+    - type: heading
+      heading: Kit 1
+      icon: mdi:solar-power-variant
+    - type: tile
+      entity: sensor.zendure_kit1_electriclevel
+      name: Batterie
+    - type: tile
+      entity: sensor.zendure_kit1_solarinputpower
+      name: Solaire
+    - type: tile
+      entity: sensor.zendure_consigne_ideale_kit1
+      name: Consigne
+    - type: tile
+      entity: number.zendure_kit1_outputlimit
+      name: Sortie actuelle
+    - type: tile
+      entity: input_number.zendure_cible_min_soc_kit1
+      name: Min SOC
+    - type: tile
+      entity: input_boolean.zendure_bypass_kit1
+      name: Bypass
+    - type: tile
+      entity: input_boolean.zendure_jauge_suspecte_kit1
+      name: Jauge suspecte
+    - type: markdown
+      content: '{{ states(''input_text.zendure_jauge_motif_kit1'') }}'
+      visibility:
+      - condition: state
+        entity: input_boolean.zendure_jauge_suspecte_kit1
+        state: 'on'
+    - type: tile
+      entity: sensor.zendure_kit1_pack_maxvol
+      name: Cellule max
+    - type: tile
+      entity: sensor.zendure_kit1_pack_minvol
+      name: Cellule min
+    - type: tile
+      entity: counter.zendure_commutations_kit1_ac_mode
+      name: Commut. AC (jour)
+  - type: grid
+    cards:
+    - type: heading
+      heading: Kit 2
+      icon: mdi:solar-power-variant
+    - type: tile
+      entity: sensor.zendure_kit2_electriclevel
+      name: Batterie
+    - type: tile
+      entity: sensor.zendure_kit2_solarinputpower
+      name: Solaire
+    - type: tile
+      entity: sensor.zendure_consigne_ideale_kit2
+      name: Consigne
+    - type: tile
+      entity: number.zendure_kit2_outputlimit
+      name: Sortie actuelle
+    - type: tile
+      entity: input_number.zendure_cible_min_soc_kit2
+      name: Min SOC
+    - type: tile
+      entity: input_boolean.zendure_bypass_kit2
+      name: Bypass
+    - type: tile
+      entity: input_boolean.zendure_jauge_suspecte_kit2
+      name: Jauge suspecte
+    - type: markdown
+      content: '{{ states(''input_text.zendure_jauge_motif_kit2'') }}'
+      visibility:
+      - condition: state
+        entity: input_boolean.zendure_jauge_suspecte_kit2
+        state: 'on'
+    - type: tile
+      entity: sensor.zendure_kit2_pack_maxvol
+      name: Cellule max
+    - type: tile
+      entity: sensor.zendure_kit2_pack_minvol
+      name: Cellule min
+    - type: tile
+      entity: counter.zendure_commutations_kit2_ac_mode
+      name: Commut. AC (jour)
+  - type: grid
+    cards:
+    - type: heading
+      heading: Kit 3
+      icon: mdi:solar-power-variant
+    - type: tile
+      entity: sensor.zendure_kit3_electriclevel
+      name: Batterie
+    - type: tile
+      entity: sensor.zendure_kit3_solarinputpower
+      name: Solaire
+    - type: tile
+      entity: sensor.zendure_consigne_ideale_kit3
+      name: Consigne
+    - type: tile
+      entity: number.zendure_kit3_outputlimit
+      name: Sortie actuelle
+    - type: tile
+      entity: input_number.zendure_cible_min_soc_kit3
+      name: Min SOC
+    - type: tile
+      entity: input_boolean.zendure_bypass_kit3
+      name: Bypass
+    - type: tile
+      entity: input_boolean.zendure_jauge_suspecte_kit3
+      name: Jauge suspecte
+    - type: markdown
+      content: '{{ states(''input_text.zendure_jauge_motif_kit3'') }}'
+      visibility:
+      - condition: state
+        entity: input_boolean.zendure_jauge_suspecte_kit3
+        state: 'on'
+    - type: tile
+      entity: sensor.zendure_kit3_pack_maxvol
+      name: Cellule max
+    - type: tile
+      entity: sensor.zendure_kit3_pack_minvol
+      name: Cellule min
+    - type: tile
+      entity: counter.zendure_commutations_kit3_ac_mode
+      name: Commut. AC (jour)
+  - type: grid
+    cards:
+    - type: heading
+      heading: Réglages
+      icon: mdi:tune-variant
+    - type: tile
+      entity: input_number.zendure_reglage_coussin_normal
+    - type: tile
+      entity: input_number.zendure_reglage_coussin_charge_reseau
+    - type: tile
+      entity: input_number.zendure_reglage_seuil_gros_conso
+    - type: tile
+      entity: input_number.zendure_reglage_seuil_ordre
+    - type: tile
+      entity: input_number.zendure_reglage_marge_anti_nuage
+    - type: tile
+      entity: input_number.zendure_reglage_tampon_bypass
+    - type: tile
+      entity: input_number.zendure_reglage_marge_soc
+    - type: tile
+      entity: input_number.zendure_reglage_marge_soc_jour_gris
+    - type: tile
+      entity: input_number.zendure_reglage_bypass_on
+    - type: tile
+      entity: input_number.zendure_reglage_bypass_off
+    - type: tile
+      entity: input_number.zendure_reglage_calibrage_charge
+    - type: tile
+      entity: input_number.zendure_reglage_calibrage_decharge
+    - type: tile
+      entity: input_number.zendure_reglage_calibrage_fin
+  - type: grid
+    cards:
+    - type: heading
+      heading: Calibrage LFP
+      icon: mdi:battery-sync
+    - type: tile
+      entity: input_boolean.zendure_calibrage_auto
+    - type: tile
+      entity: input_number.zendure_intervalle_calibrage
+    - type: tile
+      entity: sensor.zendure_decompte_calibrage_kit1
+      name: 'Kit 1 : dans'
+    - type: tile
+      entity: input_boolean.zendure_armement_calibrage_kit1
+      name: 'Kit 1 : armé'
+    - type: tile
+      entity: sensor.zendure_heure_calibrage_kit1
+      name: 'Kit 1 : départ'
+    - type: tile
+      entity: input_boolean.zendure_calibrage_kit1
+      name: 'Kit 1 : en cours'
+    - type: tile
+      entity: sensor.zendure_decompte_calibrage_kit2
+      name: 'Kit 2 : dans'
+    - type: tile
+      entity: input_boolean.zendure_armement_calibrage_kit2
+      name: 'Kit 2 : armé'
+    - type: tile
+      entity: sensor.zendure_heure_calibrage_kit2
+      name: 'Kit 2 : départ'
+    - type: tile
+      entity: input_boolean.zendure_calibrage_kit2
+      name: 'Kit 2 : en cours'
+    - type: tile
+      entity: sensor.zendure_decompte_calibrage_kit3
+      name: 'Kit 3 : dans'
+    - type: tile
+      entity: input_boolean.zendure_armement_calibrage_kit3
+      name: 'Kit 3 : armé'
+    - type: tile
+      entity: sensor.zendure_heure_calibrage_kit3
+      name: 'Kit 3 : départ'
+    - type: tile
+      entity: input_boolean.zendure_calibrage_kit3
+      name: 'Kit 3 : en cours'
