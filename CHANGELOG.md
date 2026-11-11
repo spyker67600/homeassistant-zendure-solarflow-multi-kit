@@ -9,7 +9,10 @@ Basée sur la régulation qui tourne en production chez l'auteur (V8.6), rendue 
 - Noms d'entités réels de l'intégration MQTT locale Zendure : il suffit de renommer les appareils en `Zendure Kit1/2/3`.
 - Seulement 3 lignes à adapter (compteur, gros consommateurs, téléphone).
 - Valeurs conseillées appliquées automatiquement au premier démarrage.
-- Vue de tableau de bord en cartes natives (rien à installer).
+- Tableau de bord **SCADA** animé (carte HACS html-template-card), rendu générique : éléments facultatifs (météo, Linky, gros consommateurs) configurables en tête de carte.
+- Vue de secours en cartes natives (rien à installer).
+- Prix du kWh réglable (coûts affichés dans le SCADA).
+- Licence GPL-3.0.
 
 **Régulation**
 - Calcul des consignes dans une macro commune aux 3 kits (au lieu de 3 copies).
@@ -28,6 +31,6 @@ Basée sur la régulation qui tourne en production chez l'auteur (V8.6), rendue 
 - Alerte « kit muet » (MQTT).
 - Notification centralisée : une erreur dans le service téléphone ne bloque jamais la régulation.
 
-**Retiré de la base** (trop spécifique à une installation) : ventilation des hubs, réveil HTTP au démarrage, bascule cloud/zenSDK, briefing météo, HUD financier.
+**Retiré de la base** (trop spécifique à une installation) : ventilation des hubs, réveil HTTP au démarrage, bascule cloud/zenSDK, briefing météo, HUD financier, bascule cloud/zenSDK et export (remplacés dans le SCADA par Mode hiver et Calibrage auto).
 
 ## 1.x — version initiale (archivée dans la branche `v1-archive`)

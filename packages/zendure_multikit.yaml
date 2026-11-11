@@ -97,6 +97,14 @@ input_number:
     unit_of_measurement: j
     mode: box
     icon: mdi:calendar-refresh
+  zendure_prix_kwh:
+    name: Zendure Prix du kWh
+    min: 0
+    max: 1
+    step: 0.0001
+    unit_of_measurement: €/kWh
+    mode: box
+    icon: mdi:currency-eur
   zendure_reglage_coussin_normal:
     name: Zendure réglage Coussin
     min: 0
@@ -1839,6 +1847,11 @@ automation:
       entity_id: input_number.zendure_intervalle_calibrage
     data:
       value: 35
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.zendure_prix_kwh
+    data:
+      value: 0.2
   - action: input_number.set_value
     target:
       entity_id: input_number.zendure_cible_min_soc_kit1

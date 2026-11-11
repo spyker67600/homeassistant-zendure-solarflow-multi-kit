@@ -47,6 +47,17 @@ Le but : consommer ton solaire et tes batteries chez toi, sans rien offrir au r�
 3. Adapter les **3 lignes marquées ⚠️ À ADAPTER** dans le package : ton compteur, tes gros consommateurs, ton téléphone (facultatif).
 4. Redémarrer Home Assistant, ajouter la vue du tableau de bord, régler tes **Min SOC**, puis activer **Zendure Pilotage actif**.
 
+## Le tableau de bord SCADA
+
+Un synoptique animé qui montre tout d'un coup d'œil : production PV1/PV2 de chaque kit, flux vers la batterie et la maison, consignes, Min SOC, état des jauges BMS, calibrage, compteurs de relais, réglages modifiables d'un clic, échanges avec le réseau.
+
+<!-- capture : docs/images/scada.png -->
+
+- Nécessite la carte **[html-template-card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card)** (installable depuis HACS).
+- Coller `dashboards/zendure_scada_vue.yaml` dans l'éditeur de configuration brute d'un tableau de bord.
+- Météo, Linky, prévision solaire et gros consommateurs sont **facultatifs** : à renseigner dans le bloc « CONFIGURATION DU SCADA » en tête de la carte. Laissés vides, ils sont simplement masqués.
+- Pas de HACS ? `dashboards/zendure_multikit_vue.yaml` donne une vue simple en cartes natives.
+
 👉 Pas à pas détaillé, avec captures des noms attendus : **[docs/INSTALLATION.md](docs/INSTALLATION.md)**
 👉 Comment ça marche et à quoi sert chaque réglage : **[docs/FONCTIONNEMENT.md](docs/FONCTIONNEMENT.md)**
 
@@ -57,7 +68,8 @@ Le but : consommer ton solaire et tes batteries chez toi, sans rien offrir au r�
 ```
 packages/zendure_multikit.yaml          tout le système : helpers, capteurs, automatisations
 custom_templates/zendure_multikit.jinja calcul des consignes (commun aux 3 kits)
-dashboards/zendure_multikit_vue.yaml    vue prête à coller (cartes natives HA, rien à installer)
+dashboards/zendure_scada_vue.yaml       SCADA : synoptique animé complet (carte HACS html-template-card)
+dashboards/zendure_multikit_vue.yaml    vue simple de secours (cartes natives HA, rien à installer)
 docs/                                   installation, fonctionnement, dépannage
 ```
 
@@ -72,9 +84,16 @@ Si Home Assistant plante, les kits gardent leur dernière consigne : au pire un 
 
 ---
 
+## Licence
+
+**GPL-3.0** : tu peux utiliser, modifier et partager librement ce projet. Toute version modifiée que tu redistribues doit rester open source, sous la même licence, en citant l'auteur d'origine. Texte complet : [LICENSE](LICENSE).
+
+---
+
 ## 🇬🇧 English summary
 
 Home Assistant package that runs **2–3 Zendure SolarFlow kits** as one system, **fully local over MQTT (no cloud)**, aiming at **zero grid export**.
 Solar goes to the house first; the remaining need is shared between batteries weighted by their usable charge (squared), with a "master" kit, full-battery bypass with hysteresis, winter mode that keeps heavy appliances on the grid, deferred min-SOC, automatic **LFP calibration** that detects a real full charge from **cell voltage**, a **BMS gauge plausibility check** that excludes a lying gauge from discharging, and several safety nets (low-SOC rescue, grid-meter watchdog, silent-kit alert).
 All thresholds are adjustable from the dashboard. Requires Home Assistant 2025.10+, local MQTT entities for the kits, and a grid power meter.
+Optional animated SCADA dashboard (needs the HACS card *html-template-card*). License: GPL-3.0.
 Install: rename the Zendure devices to `Zendure Kit1/2/3`, drop the package and the Jinja file in place, edit the three `⚠️ À ADAPTER` lines, restart. Docs are in French; questions in English are welcome in the issues.
