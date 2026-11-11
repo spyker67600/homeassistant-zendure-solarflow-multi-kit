@@ -51,7 +51,7 @@ Le but : consommer ton solaire et tes batteries chez toi, sans rien offrir au r�
 
 Un synoptique animé qui montre tout d'un coup d'œil : production PV1/PV2 de chaque kit, flux vers la batterie et la maison, consignes, Min SOC, état des jauges BMS, calibrage, compteurs de relais, réglages modifiables d'un clic, échanges avec le réseau.
 
-<!-- capture : docs/images/scada.png -->
+![SCADA Zendure Multi-Kit](docs/images/scada.jpg)
 
 - Nécessite la carte **[html-template-card](https://github.com/PiotrMachowski/Home-Assistant-Lovelace-HTML-Jinja2-Template-card)** (installable depuis HACS).
 - Coller `dashboards/zendure_scada_vue.yaml` dans l'éditeur de configuration brute d'un tableau de bord.
