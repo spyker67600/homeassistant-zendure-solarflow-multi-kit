@@ -54,11 +54,11 @@ Armement : manuel (interrupteur *Armement calibrage*) ou automatique avec *Calib
 ## Le contrôle de plausibilité des jauges
 
 Une jauge est déclarée **suspecte** si :
-- elle saute de **10 points ou plus sans charge** ;
+- elle saute de **10 points ou plus sans charge**, sauf vers 99-100 % ou vers 0-5 % : ce saut-là est le BMS qui se recale tout seul, il lève au contraire l'alerte ;
 - elle affiche **≥ 95 %** alors que les cellules sont **sous 3,34 V** au repos pendant 15 min ;
 - elle affiche **≤ 15 %** alors que les cellules sont **≥ 3,28 V** au repos pendant 15 min.
 
-Le kit est alors exclu de la décharge et le motif s'affiche dans le tableau de bord. Retour à la normale automatique au prochain vrai plein (calibrage) ou vrai vide.
+Le kit est alors exclu de la décharge et le motif s'affiche dans le tableau de bord. Retour à la normale automatique au prochain vrai plein (calibrage), vrai vide ou recalage du BMS.
 
 ## Les sécurités
 

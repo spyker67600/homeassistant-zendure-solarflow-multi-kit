@@ -1484,7 +1484,7 @@ automation:
       date: "{{ now().strftime('%Y-%m-%d') }}"
 - id: zendure_mk_plausibilite_jauges
   alias: Zendure - Contrôle de plausibilité des jauges
-  description: 'Signale une jauge BMS suspecte : saut de 10 points ou plus sans charge, ou jauge contredite par la tension des cellules au repos (≥ 95 % avec cellule max < 3,34 V, ou ≤ 15 % avec cellule min ≥ 3,28 V pendant 15 min). Un kit suspect est exclu du partage batterie. Se lève tout seul au prochain vrai plein ou vrai vide.'
+  description: "Signale une jauge BMS suspecte : saut de 10 points ou plus sans charge (sauf vers 99-100 % ou 0-5 % : c'est le BMS qui se recale), ou jauge contredite par la tension des cellules au repos (≥ 95 % avec cellule max < 3,34 V, ou ≤ 15 % avec cellule min ≥ 3,28 V pendant 15 min). Un kit suspect est exclu du partage batterie. Se lève tout seul au prochain vrai plein ou vrai vide."
   mode: queued
   max: 10
   triggers:
@@ -1556,7 +1556,7 @@ automation:
   - choose:
     - conditions:
       - condition: template
-        value_template: "{{ typ == 'saut' and is_number(trigger.from_state.state) and is_number(trigger.to_state.state) and (trigger.to_state.state | float - trigger.from_state.state | float) | abs >= 10 and states('sensor.zendure_' ~ kit ~ '_outputpackpower') | float(0) < 100 }}"
+        value_template: "{% set f = trigger.from_state.state | float(0) %}{% set t = trigger.to_state.state | float(0) %}{{ typ == 'saut' and is_number(trigger.from_state.state) and is_number(trigger.to_state.state) and (t - f) | abs >= 10 and states('sensor.zendure_' ~ kit ~ '_outputpackpower') | float(0) < 100 and not (t >= 99 and t > f) and not (t <= 5 and t < f) }}"
       sequence:
       - action: input_boolean.turn_on
         target:
@@ -1574,6 +1574,22 @@ automation:
             titre: Jauge {{ kit }} suspecte
             message: "Saut de {{ trigger.from_state.state | int }} à {{ trigger.to_state.state | int }} % sans charge ({{ heure }}). Kit exclu de la décharge jusqu'au prochain vrai plein."
             notification_id: jauge_{{ kit }}
+    - alias: 'Recalage BMS : un saut vers 99-100 % ou vers 0-5 % est le BMS qui se recale, pas une erreur'
+      conditions:
+      - condition: template
+        value_template: "{% set f = trigger.from_state.state | float(0) %}{% set t = trigger.to_state.state | float(0) %}{{ typ == 'saut' and is_number(trigger.from_state.state) and is_number(trigger.to_state.state) and (t - f) | abs >= 10 and ((t >= 99 and t > f) or (t <= 5 and t < f)) }}"
+      sequence:
+      - action: input_boolean.turn_off
+        target:
+          entity_id: '{{ flag }}'
+      - action: input_text.set_value
+        target:
+          entity_id: '{{ motif }}'
+        data:
+          value: RAS (recalage BMS {{ trigger.from_state.state | int }} → {{ trigger.to_state.state | int }} % le {{ heure }})
+      - action: persistent_notification.dismiss
+        data:
+          notification_id: jauge_{{ kit }}
     - conditions:
       - condition: template
         value_template: "{{ typ in ['haut', 'bas'] }}"
